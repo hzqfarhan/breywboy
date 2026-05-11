@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/auth"
 import { DollarSign, ShoppingBag, Coffee, CheckCircle2 } from "lucide-react"
 

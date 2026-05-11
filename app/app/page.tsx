@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/auth"
 import { CustomerTopBar } from "@/components/layout/CustomerTopBar"

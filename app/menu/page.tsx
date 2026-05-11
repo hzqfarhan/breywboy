@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { PublicNavbar } from "@/components/layout/PublicNavbar"
 import { prisma } from "@/lib/auth"
 import { Coffee } from "lucide-react"
