@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { supabase } from "@/lib/supabase"
+import { getUserById } from "@/lib/supabase/users"
 import { auth, signOut } from "@/lib/auth"
 import { CustomerTopBar } from "@/components/layout/CustomerTopBar"
 import { Button } from "@/components/ui/button"
@@ -7,12 +7,7 @@ import { User, Mail, Phone, LogOut, ChevronRight, Settings, Heart } from "lucide
 
 export default async function ProfilePage() {
   const session = await auth()
-  
-  const { data: user } = await supabase
-    .from('User')
-    .select('*, Order(*)')
-    .eq('id', session?.user?.id || '')
-    .single()
+  const user = await getUserById(session?.user?.id || '')
 
   const orderCount = user?.Order?.length || 0
 

@@ -1,10 +1,9 @@
 export const dynamic = "force-dynamic";
-import { supabase } from "@/lib/supabase"
+import { getAllOrders } from "@/lib/supabase/orders"
 import { DollarSign, ShoppingBag, Coffee, CheckCircle2 } from "lucide-react"
 
 export default async function AdminDashboard() {
-  const { data: ordersData } = await supabase.from('Order').select('*')
-  const orders = ordersData || []
+  const orders = await getAllOrders()
   
   const totalRevenue = orders.reduce((acc, order) => acc + order.total, 0)
   const pendingCount = orders.filter(o => o.status === "NEW" || o.status === "PREPARING").length

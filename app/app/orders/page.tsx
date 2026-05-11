@@ -1,20 +1,13 @@
 export const dynamic = "force-dynamic";
-import { supabase } from "@/lib/supabase"
 import { auth } from "@/lib/auth"
+import { getUserOrders } from "@/lib/supabase/orders"
 import { CustomerTopBar } from "@/components/layout/CustomerTopBar"
 import Link from "next/link"
 import { Coffee, ChevronRight } from "lucide-react"
 
 export default async function OrdersPage() {
   const session = await auth()
-  
-  const { data: rawOrders } = await supabase
-    .from('Order')
-    .select('*, items:OrderItem(*)')
-    .eq('userId', session?.user?.id || '')
-    .order('createdAt', { ascending: false })
-
-  const orders = rawOrders || []
+  const orders = await getUserOrders(session?.user?.id || '')
 
   const activeOrders = orders.filter(o => ["NEW", "PREPARING", "READY"].includes(o.status))
   const pastOrders = orders.filter(o => ["COMPLETED", "CANCELLED"].includes(o.status))

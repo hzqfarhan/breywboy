@@ -21,11 +21,9 @@ async function getSession(req: NextRequest): Promise<{ role?: string } | null> {
 
   if (!token) return null
 
-  const secret = process.env.AUTH_SECRET
-  if (!secret) {
-    // No secret configured — can't verify anything, treat as logged out
-    return null
-  }
+  // Must match the secret used in auth.config.ts
+  const secret =
+    process.env.AUTH_SECRET || "breywboy-demo-secret-change-in-production"
 
   try {
     const { payload } = await jwtVerify(token, new TextEncoder().encode(secret))

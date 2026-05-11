@@ -1,26 +1,13 @@
 export const dynamic = "force-dynamic";
-import { supabase } from "@/lib/supabase"
+import { getMenuCategories, getAddOns } from "@/lib/supabase/menu"
 import { MenuClient } from "./MenuClient"
 import { CustomerTopBar } from "@/components/layout/CustomerTopBar"
 
 export default async function MenuPage() {
-  const { data: rawCategories } = await supabase
-    .from('Category')
-    .select(`
-      *,
-      products:Product(*)
-    `)
-    .order('sortOrder', { ascending: true })
-
-  const categories = (rawCategories || []).map(cat => ({
-    ...cat,
-    products: (cat.products || []).filter((p: any) => p.isAvailable)
-  }))
-
-  const { data: addOns } = await supabase
-    .from('AddOn')
-    .select('*')
-    .eq('isAvailable', true)
+  const [categories, addOns] = await Promise.all([
+    getMenuCategories(),
+    getAddOns(),
+  ])
 
   return (
     <div className="flex flex-col h-full bg-background">

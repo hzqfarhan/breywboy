@@ -1,14 +1,9 @@
 export const dynamic = "force-dynamic";
-import { supabase } from "@/lib/supabase"
+import { getAllOrders } from "@/lib/supabase/orders"
 import { OrdersClient } from "./OrdersClient"
 
 export default async function AdminOrdersPage() {
-  const { data: rawOrders } = await supabase
-    .from('Order')
-    .select('*, user:User(name, phone), items:OrderItem(*)')
-    .order('createdAt', { ascending: true })
-
-  const orders = rawOrders || []
+  const orders = await getAllOrders()
 
   return (
     <div className="h-full flex flex-col">

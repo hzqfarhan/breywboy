@@ -1,16 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+// Re-exports from the new modular supabase/ folder.
+// All existing imports like `import { supabase } from '@/lib/supabase'` still work.
+export * from './supabase/index'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn(
-    '[supabase] Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. ' +
-    'Real-user database queries will fail, but demo accounts will still work.'
-  )
-}
-
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder'
-)

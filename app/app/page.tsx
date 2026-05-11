@@ -1,6 +1,8 @@
 export const dynamic = "force-dynamic";
 import { auth } from "@/lib/auth"
-import { supabase } from "@/lib/supabase"
+import { getUserById } from "@/lib/supabase/users"
+import { getActiveOrder } from "@/lib/supabase/orders"
+import { getPopularProducts } from "@/lib/supabase/menu"
 import { CustomerTopBar } from "@/components/layout/CustomerTopBar"
 import { BannerCarousel } from "@/components/dashboard/BannerCarousel"
 import { Coffee, Gift, ChevronRight, Star } from "lucide-react"
@@ -9,30 +11,13 @@ import Image from "next/image"
 
 export default async function CustomerDashboard() {
   const session = await auth()
-  
-  const { data: user } = await supabase
-    .from('User')
-    .select('*')
-    .eq('id', session?.user?.id || '')
-    .single()
+  const userId = session?.user?.id || ''
 
-  // Get active order if any
-  const { data: activeOrder } = await supabase
-    .from('Order')
-    .select('*')
-    .eq('userId', session?.user?.id || '')
-    .in('status', ['NEW', 'PREPARING', 'READY'])
-    .order('createdAt', { ascending: false })
-    .limit(1)
-    .single()
-
-  // Get popular items
-  const { data: popularItems } = await supabase
-    .from('Product')
-    .select('*, category:Category(*)')
-    .eq('isPopular', true)
-    .eq('isAvailable', true)
-    .limit(4)
+  const [user, activeOrder, popularItems] = await Promise.all([
+    getUserById(userId),
+    getActiveOrder(userId),
+    getPopularProducts(4),
+  ])
 
   return (
     <div className="flex flex-col h-full bg-background">

@@ -1,15 +1,9 @@
 export const dynamic = "force-dynamic";
-import { supabase } from "@/lib/supabase"
+import { getAllProducts } from "@/lib/supabase/menu"
 import { MenuClient } from "./MenuClient"
 
 export default async function AdminMenuPage() {
-  const { data: rawProducts } = await supabase
-    .from('Product')
-    .select('*, category:Category(*)')
-    .order('categoryId', { ascending: true })
-    .order('name', { ascending: true })
-
-  const products = rawProducts || []
+  const products = await getAllProducts()
 
   return (
     <div className="h-full flex flex-col">

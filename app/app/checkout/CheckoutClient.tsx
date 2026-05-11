@@ -4,7 +4,7 @@ import { useCartStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Clock, MapPin, CheckCircle2, CreditCard, Coffee } from "lucide-react";
 import { useState, useTransition } from "react";
-import { createOrder } from "./actions";
+import { createOrderAction } from "./actions";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
@@ -23,7 +23,7 @@ export function CheckoutClient() {
   const handleCheckout = () => {
     startTransition(async () => {
       try {
-        await createOrder(items, paymentMethod, pickupTime);
+        await createOrderAction(items, paymentMethod, pickupTime);
         clearCart();
       } catch (e) {
         console.error(e);
