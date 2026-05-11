@@ -3,7 +3,7 @@ import { authConfig } from "@/auth.config"
 import { supabase } from "@/lib/supabase"
 import CredentialsProvider from "next-auth/providers/credentials"
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+const authResult = NextAuth({
   ...authConfig,
   providers: [
     CredentialsProvider({
@@ -33,3 +33,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     })
   ]
 })
+
+export const { handlers, auth, signIn, signOut } = authResult
+export const { GET, POST } = handlers
