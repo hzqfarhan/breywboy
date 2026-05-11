@@ -19,11 +19,19 @@ export default auth((req) => {
     }
 
     // Role-based protection
-    if (nextUrl.pathname.startsWith("/admin") && req.auth?.user?.role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/app", nextUrl))
+    const userRole = req.auth?.user?.role
+    const isAdminPath = nextUrl.pathname.startsWith("/admin")
+    const isAppPath = nextUrl.pathname.startsWith("/app")
+
+    if (isAdminPath && userRole !== "ADMIN") {
+      // If they are a CUSTOMER, send to /app, otherwise send to landing
+      const target = userRole === "CUSTOMER" ? "/app" : "/"
+      return NextResponse.redirect(new URL(target, nextUrl))
     }
-    if (nextUrl.pathname.startsWith("/app") && req.auth?.user?.role !== "CUSTOMER") {
-      return NextResponse.redirect(new URL("/admin", nextUrl))
+    if (isAppPath && userRole !== "CUSTOMER") {
+      // If they are an ADMIN, send to /admin, otherwise send to landing
+      const target = userRole === "ADMIN" ? "/admin" : "/"
+      return NextResponse.redirect(new URL(target, nextUrl))
     }
     
     return NextResponse.next()
