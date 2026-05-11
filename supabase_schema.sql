@@ -16,7 +16,9 @@ CREATE TABLE IF NOT EXISTS "User" (
 CREATE TABLE IF NOT EXISTS "Category" (
   "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "name" TEXT NOT NULL,
-  "sortOrder" INTEGER DEFAULT 0
+  "slug" TEXT, -- Added to match existing schema
+  "sortOrder" INTEGER DEFAULT 0,
+  "isActive" BOOLEAN DEFAULT true
 );
 
 -- Products Table
@@ -82,12 +84,12 @@ CREATE TABLE IF NOT EXISTS "Reward" (
 );
 
 -- 2. Insert Initial Data (Categories)
-INSERT INTO "Category" ("id", "name", "sortOrder") VALUES
-('cat-coffee', 'Coffee', 1),
-('cat-non-coffee', 'Non-Coffee', 2),
-('cat-matcha', 'Matcha', 3),
-('cat-tea', 'Tea', 4),
-('cat-refreshers', 'Refreshers', 5);
+INSERT INTO "Category" ("id", "name", "slug", "sortOrder", "isActive") VALUES
+('cat-coffee', 'Coffee', 'coffee', 1, true),
+('cat-non-coffee', 'Non-Coffee', 'non-coffee', 2, true),
+('cat-matcha', 'Matcha', 'matcha', 3, true),
+('cat-tea', 'Tea', 'tea', 4, true),
+('cat-refreshers', 'Refreshers', 'refreshers', 5, true);
 
 -- 3. Insert Initial Data (Add-Ons)
 INSERT INTO "AddOn" ("name", "price", "isAvailable") VALUES
