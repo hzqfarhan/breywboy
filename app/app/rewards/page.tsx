@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { prisma, auth } from "@/lib/auth"
 import { CustomerTopBar } from "@/components/layout/CustomerTopBar"
 import { Gift, Star, Trophy, ArrowRight } from "lucide-react"
