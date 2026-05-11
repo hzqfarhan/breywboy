@@ -1,0 +1,1 @@
+﻿export default function Page() { return <div className="p-6 bg-white rounded-2xl border shadow-sm"><h2 className="text-xl font-bold font-heading mb-2">Module Coming Soon</h2><p className="text-muted-foreground">This admin module is under construction.</p></div> }
