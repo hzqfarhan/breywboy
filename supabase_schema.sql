@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS "Reward" (
 );
 
 -- 2. Insert Initial Data (Categories)
-INSERT INTO "Category" (id, name, sortOrder) VALUES
+INSERT INTO "Category" ("id", "name", "sortOrder") VALUES
 ('cat-coffee', 'Coffee', 1),
 ('cat-non-coffee', 'Non-Coffee', 2),
 ('cat-matcha', 'Matcha', 3),
@@ -90,7 +90,7 @@ INSERT INTO "Category" (id, name, sortOrder) VALUES
 ('cat-refreshers', 'Refreshers', 5);
 
 -- 3. Insert Initial Data (Add-Ons)
-INSERT INTO "AddOn" (name, price, isAvailable) VALUES
+INSERT INTO "AddOn" ("name", "price", "isAvailable") VALUES
 ('Extra Shot', 2.0, true),
 ('Oat Milk', 3.0, true),
 ('Caramel Drizzle', 1.5, true);
