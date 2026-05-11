@@ -1,9 +1,10 @@
 export const dynamic = "force-dynamic";
-import { prisma } from "@/lib/auth"
+import { supabase } from "@/lib/supabase"
 import { DollarSign, ShoppingBag, Coffee, CheckCircle2 } from "lucide-react"
 
 export default async function AdminDashboard() {
-  const orders = await prisma.order.findMany()
+  const { data: ordersData } = await supabase.from('Order').select('*')
+  const orders = ordersData || []
   
   const totalRevenue = orders.reduce((acc, order) => acc + order.total, 0)
   const pendingCount = orders.filter(o => o.status === "NEW" || o.status === "PREPARING").length

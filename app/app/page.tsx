@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import { auth } from "@/lib/auth"
-import { prisma } from "@/lib/auth"
+import { supabase } from "@/lib/supabase"
 import { CustomerTopBar } from "@/components/layout/CustomerTopBar"
 import { BannerCarousel } from "@/components/dashboard/BannerCarousel"
 import { Coffee, Gift, ChevronRight, Star } from "lucide-react"
@@ -9,25 +9,30 @@ import Image from "next/image"
 
 export default async function CustomerDashboard() {
   const session = await auth()
-  const user = await prisma.user.findUnique({
-    where: { id: session?.user?.id },
-  })
+  
+  const { data: user } = await supabase
+    .from('User')
+    .select('*')
+    .eq('id', session?.user?.id || '')
+    .single()
 
   // Get active order if any
-  const activeOrder = await prisma.order.findFirst({
-    where: { 
-      userId: session?.user?.id,
-      status: { in: ["NEW", "PREPARING", "READY"] }
-    },
-    orderBy: { createdAt: 'desc' }
-  })
+  const { data: activeOrder } = await supabase
+    .from('Order')
+    .select('*')
+    .eq('userId', session?.user?.id || '')
+    .in('status', ['NEW', 'PREPARING', 'READY'])
+    .order('createdAt', { ascending: false })
+    .limit(1)
+    .single()
 
   // Get popular items
-  const popularItems = await prisma.product.findMany({
-    where: { isPopular: true, isAvailable: true },
-    take: 4,
-    include: { category: true }
-  })
+  const { data: popularItems } = await supabase
+    .from('Product')
+    .select('*, category:Category(*)')
+    .eq('isPopular', true)
+    .eq('isAvailable', true)
+    .limit(4)
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -89,7 +94,7 @@ export default async function CustomerDashboard() {
           </div>
           
           <div className="flex overflow-x-auto pb-4 -mx-4 px-4 gap-4 snap-x">
-            {popularItems.map((item) => (
+            {(popularItems || []).map((item: any) => (
               <Link key={item.id} href="/app/menu" className="min-w-[160px] snap-start bg-white rounded-2xl shadow-sm border p-3 flex flex-col">
                 <div className="w-full aspect-square bg-secondary rounded-xl mb-3 flex items-center justify-center">
                   <Coffee className="w-12 h-12 text-primary/20" />

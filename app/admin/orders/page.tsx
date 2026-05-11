@@ -1,15 +1,14 @@
 export const dynamic = "force-dynamic";
-import { prisma } from "@/lib/auth"
+import { supabase } from "@/lib/supabase"
 import { OrdersClient } from "./OrdersClient"
 
 export default async function AdminOrdersPage() {
-  const orders = await prisma.order.findMany({
-    include: {
-      user: { select: { name: true, phone: true } },
-      items: true
-    },
-    orderBy: { createdAt: 'asc' }
-  })
+  const { data: rawOrders } = await supabase
+    .from('Order')
+    .select('*, user:User(name, phone), items:OrderItem(*)')
+    .order('createdAt', { ascending: true })
+
+  const orders = rawOrders || []
 
   return (
     <div className="h-full flex flex-col">

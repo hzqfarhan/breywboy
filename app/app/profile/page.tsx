@@ -1,17 +1,20 @@
 export const dynamic = "force-dynamic";
-import { prisma, auth, signOut } from "@/lib/auth"
+import { supabase } from "@/lib/supabase"
+import { auth, signOut } from "@/lib/auth"
 import { CustomerTopBar } from "@/components/layout/CustomerTopBar"
 import { Button } from "@/components/ui/button"
 import { User, Mail, Phone, LogOut, ChevronRight, Settings, Heart } from "lucide-react"
 
 export default async function ProfilePage() {
   const session = await auth()
-  const user = await prisma.user.findUnique({
-    where: { id: session?.user?.id },
-    include: { Order: true }
-  })
+  
+  const { data: user } = await supabase
+    .from('User')
+    .select('*, Order(*)')
+    .eq('id', session?.user?.id || '')
+    .single()
 
-  const orderCount = user?.Order.length || 0
+  const orderCount = user?.Order?.length || 0
 
   return (
     <div className="flex flex-col h-full bg-background min-h-screen">

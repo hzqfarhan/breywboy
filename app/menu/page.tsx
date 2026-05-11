@@ -1,17 +1,23 @@
 export const dynamic = "force-dynamic";
 import { PublicNavbar } from "@/components/layout/PublicNavbar"
-import { prisma } from "@/lib/auth"
+import { supabase } from "@/lib/supabase"
 import { Coffee } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 export default async function PublicMenuPage() {
-  const categories = await prisma.category.findMany({
-    orderBy: { sortOrder: 'asc' },
-    include: {
-      products: { where: { isAvailable: true } }
-    }
-  })
+  const { data: rawCategories } = await supabase
+    .from('Category')
+    .select(`
+      *,
+      products:Product(*)
+    `)
+    .order('sortOrder', { ascending: true })
+
+  const categories = (rawCategories || []).map(cat => ({
+    ...cat,
+    products: (cat.products || []).filter((p: any) => p.isAvailable)
+  }))
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

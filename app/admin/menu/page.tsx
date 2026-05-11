@@ -1,12 +1,15 @@
 export const dynamic = "force-dynamic";
-import { prisma } from "@/lib/auth"
+import { supabase } from "@/lib/supabase"
 import { MenuClient } from "./MenuClient"
 
 export default async function AdminMenuPage() {
-  const products = await prisma.product.findMany({
-    include: { category: true },
-    orderBy: [{ categoryId: 'asc' }, { name: 'asc' }]
-  })
+  const { data: rawProducts } = await supabase
+    .from('Product')
+    .select('*, category:Category(*)')
+    .order('categoryId', { ascending: true })
+    .order('name', { ascending: true })
+
+  const products = rawProducts || []
 
   return (
     <div className="h-full flex flex-col">

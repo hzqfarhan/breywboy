@@ -1,7 +1,7 @@
 "use server"
 
 import { auth } from "@/lib/auth"
-import { prisma } from "@/lib/auth"
+import { supabase } from "@/lib/supabase"
 import { redirect } from "next/navigation"
 
 export async function createOrder(cartItems: any[], paymentMethod: string, pickupTime: string) {
@@ -13,7 +13,7 @@ export async function createOrder(cartItems: any[], paymentMethod: string, picku
   const orderItemsData = [];
 
   for (const item of cartItems) {
-    const product = await prisma.product.findUnique({ where: { id: item.productId } });
+    const { data: product } = await supabase.from('Product').select('*').eq('id', item.productId).single();
     if (!product) throw new Error(`Product not found: ${item.productId}`);
 
     let unitPrice = product.basePrice || 0;
@@ -32,7 +32,7 @@ export async function createOrder(cartItems: any[], paymentMethod: string, picku
     // Validate add-ons
     if (item.customizations.addOns && item.customizations.addOns.length > 0) {
       for (const addonClient of item.customizations.addOns) {
-        const addonDb = await prisma.addOn.findUnique({ where: { id: addonClient.id } });
+        const { data: addonDb } = await supabase.from('AddOn').select('*').eq('id', addonClient.id).single();
         if (!addonDb) throw new Error(`Add-on not found: ${addonClient.id}`);
         
         if (addonDb.name === 'Oat Milk' && !product.allowOatMilk) {
@@ -60,27 +60,32 @@ export async function createOrder(cartItems: any[], paymentMethod: string, picku
 
   const orderNumber = `BB-${Math.floor(1000 + Math.random() * 9000)}`;
 
-  const order = await prisma.order.create({
-    data: {
-      userId: session.user.id,
-      orderNumber,
-      subtotal,
-      total: subtotal, // Assuming 0 tax/discount for demo
-      paymentMethod,
-      paymentStatus: paymentMethod === 'Online' ? 'PAID' : 'PENDING',
-      pickupTime: pickupTime === 'ASAP' ? new Date(Date.now() + 15 * 60000) : new Date(Date.now() + 60 * 60000), // Mock 15 mins for ASAP
-      status: 'NEW',
-      items: {
-        create: orderItemsData
-      }
-    }
-  });
+  const { data: order, error: orderError } = await supabase.from('Order').insert({
+    userId: session.user.id,
+    orderNumber,
+    subtotal,
+    total: subtotal,
+    paymentMethod,
+    paymentStatus: paymentMethod === 'Online' ? 'PAID' : 'PENDING',
+    pickupTime: pickupTime === 'ASAP' ? new Date(Date.now() + 15 * 60000).toISOString() : new Date(Date.now() + 60 * 60000).toISOString(),
+    status: 'NEW',
+  }).select().single();
+
+  if (orderError) throw new Error(orderError.message);
+
+  const orderItemsToInsert = orderItemsData.map(item => ({
+    ...item,
+    orderId: order.id
+  }));
+
+  const { error: itemsError } = await supabase.from('OrderItem').insert(orderItemsToInsert);
+  if (itemsError) throw new Error(itemsError.message);
 
   // Give points
-  await prisma.user.update({
-    where: { id: session.user.id },
-    data: { points: { increment: Math.floor(subtotal) } }
-  });
+  const { data: user } = await supabase.from('User').select('points').eq('id', session.user.id).single();
+  if (user) {
+    await supabase.from('User').update({ points: user.points + Math.floor(subtotal) }).eq('id', session.user.id);
+  }
 
   redirect(`/app/orders/${order.id}`);
 }

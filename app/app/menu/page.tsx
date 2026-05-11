@@ -1,21 +1,26 @@
 export const dynamic = "force-dynamic";
-import { prisma } from "@/lib/auth"
+import { supabase } from "@/lib/supabase"
 import { MenuClient } from "./MenuClient"
 import { CustomerTopBar } from "@/components/layout/CustomerTopBar"
 
 export default async function MenuPage() {
-  const categories = await prisma.category.findMany({
-    orderBy: { sortOrder: 'asc' },
-    include: {
-      products: {
-        where: { isAvailable: true }
-      }
-    }
-  })
+  const { data: rawCategories } = await supabase
+    .from('Category')
+    .select(`
+      *,
+      products:Product(*)
+    `)
+    .order('sortOrder', { ascending: true })
 
-  const addOns = await prisma.addOn.findMany({
-    where: { isAvailable: true }
-  })
+  const categories = (rawCategories || []).map(cat => ({
+    ...cat,
+    products: (cat.products || []).filter((p: any) => p.isAvailable)
+  }))
+
+  const { data: addOns } = await supabase
+    .from('AddOn')
+    .select('*')
+    .eq('isAvailable', true)
 
   return (
     <div className="flex flex-col h-full bg-background">

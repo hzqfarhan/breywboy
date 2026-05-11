@@ -1,28 +1,22 @@
-import NextAuth, { NextAuthConfig } from "next-auth"
+import NextAuth from "next-auth"
+import { authConfig } from "@/auth.config"
+import { supabase } from "@/lib/supabase"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { PrismaClient } from "@prisma/client"
 
-// To avoid multiple instances in dev
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
-export const prisma = globalForPrisma.prisma || new PrismaClient()
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
-
-export const authConfig = {
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   providers: [
     CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
-      },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string }
-        })
+        const { data: user, error } = await supabase
+          .from('User')
+          .select('*')
+          .eq('email', credentials.email as string)
+          .single()
 
-        if (!user) return null
+        if (error || !user || !user.passwordHash) return null
 
         // In a real app, use bcrypt.compare
         if (user.passwordHash !== credentials.password) {
@@ -37,27 +31,5 @@ export const authConfig = {
         }
       }
     })
-  ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id
-        token.role = user.role
-      }
-      return token
-    },
-    async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id as string
-        session.user.role = token.role as string
-      }
-      return session
-    }
-  },
-  pages: {
-    signIn: "/login",
-  },
-  session: { strategy: "jwt" },
-} satisfies NextAuthConfig
-
-export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth(authConfig)
+  ]
+})

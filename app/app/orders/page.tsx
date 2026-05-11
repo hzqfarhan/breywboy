@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
-import { prisma, auth } from "@/lib/auth"
+import { supabase } from "@/lib/supabase"
+import { auth } from "@/lib/auth"
 import { CustomerTopBar } from "@/components/layout/CustomerTopBar"
 import Link from "next/link"
 import { Coffee, ChevronRight } from "lucide-react"
@@ -7,11 +8,13 @@ import { Coffee, ChevronRight } from "lucide-react"
 export default async function OrdersPage() {
   const session = await auth()
   
-  const orders = await prisma.order.findMany({
-    where: { userId: session?.user?.id },
-    orderBy: { createdAt: 'desc' },
-    include: { items: true }
-  })
+  const { data: rawOrders } = await supabase
+    .from('Order')
+    .select('*, items:OrderItem(*)')
+    .eq('userId', session?.user?.id || '')
+    .order('createdAt', { ascending: false })
+
+  const orders = rawOrders || []
 
   const activeOrders = orders.filter(o => ["NEW", "PREPARING", "READY"].includes(o.status))
   const pastOrders = orders.filter(o => ["COMPLETED", "CANCELLED"].includes(o.status))

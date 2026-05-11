@@ -1,19 +1,26 @@
 export const dynamic = "force-dynamic";
-import { prisma, auth } from "@/lib/auth"
+import { supabase } from "@/lib/supabase"
+import { auth } from "@/lib/auth"
 import { CustomerTopBar } from "@/components/layout/CustomerTopBar"
 import { Gift, Star, Trophy, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default async function RewardsPage() {
   const session = await auth()
-  const user = await prisma.user.findUnique({
-    where: { id: session?.user?.id }
-  })
   
-  const rewards = await prisma.reward.findMany({
-    where: { isActive: true },
-    orderBy: { pointsRequired: 'asc' }
-  })
+  const { data: user } = await supabase
+    .from('User')
+    .select('*')
+    .eq('id', session?.user?.id || '')
+    .single()
+  
+  const { data: rawRewards } = await supabase
+    .from('Reward')
+    .select('*')
+    .eq('isActive', true)
+    .order('pointsRequired', { ascending: true })
+
+  const rewards = rawRewards || []
 
   const points = user?.points || 0
   

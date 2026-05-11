@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
-import { prisma, auth } from "@/lib/auth"
+import { supabase } from "@/lib/supabase"
+import { auth } from "@/lib/auth"
 import { CustomerTopBar } from "@/components/layout/CustomerTopBar"
 import { notFound } from "next/navigation"
 import { OrderTracker } from "./OrderTracker"
@@ -9,10 +10,12 @@ import { Coffee } from "lucide-react"
 
 export default async function OrderDetailPage({ params }: { params: { id: string } }) {
   const session = await auth()
-  const order = await prisma.order.findUnique({
-    where: { id: params.id },
-    include: { items: true }
-  })
+  
+  const { data: order } = await supabase
+    .from('Order')
+    .select('*, items:OrderItem(*)')
+    .eq('id', params.id)
+    .single()
 
   if (!order || order.userId !== session?.user?.id) {
     notFound()
