@@ -1,3 +1,12 @@
+-- 0. Drop existing tables to ensure a clean setup
+DROP TABLE IF EXISTS "OrderItem" CASCADE;
+DROP TABLE IF EXISTS "Order" CASCADE;
+DROP TABLE IF EXISTS "Product" CASCADE;
+DROP TABLE IF EXISTS "Category" CASCADE;
+DROP TABLE IF EXISTS "User" CASCADE;
+DROP TABLE IF EXISTS "AddOn" CASCADE;
+DROP TABLE IF EXISTS "Reward" CASCADE;
+
 -- 1. Create Tables
 
 -- Users Table
