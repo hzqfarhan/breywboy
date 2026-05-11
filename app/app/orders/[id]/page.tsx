@@ -50,7 +50,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
         <div className="bg-white p-4 rounded-2xl shadow-sm border space-y-4">
           <h3 className="font-bold text-sm">Order Summary</h3>
           <div className="space-y-3">
-            {order.items.map(item => {
+            {order.items.map((item: any) => {
               const customs = JSON.parse(item.customizations)
               return (
                 <div key={item.id} className="flex gap-3 text-sm">

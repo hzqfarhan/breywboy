@@ -41,7 +41,7 @@ export default async function PublicMenuPage() {
             <section key={cat.id}>
               <h2 className="text-3xl font-heading font-bold text-primary border-b border-border pb-4 mb-8 uppercase tracking-wide">{cat.name}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {cat.products.map(product => (
+                {cat.products.map((product: any) => (
                   <div key={product.id} className="bg-white p-5 rounded-2xl border border-border flex gap-5 hover:border-primary/50 transition-colors">
                     <div className="w-20 h-20 bg-secondary rounded-xl flex items-center justify-center shrink-0">
                       <Coffee className="w-10 h-10 text-primary/20" />

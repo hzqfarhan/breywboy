@@ -25,7 +25,7 @@ export default async function MenuPage() {
   return (
     <div className="flex flex-col h-full bg-background">
       <CustomerTopBar title="Menu" />
-      <MenuClient categories={categories} addOns={addOns} />
+      <MenuClient categories={categories} addOns={addOns || []} />
     </div>
   )
 }
