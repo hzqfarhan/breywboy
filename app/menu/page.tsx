@@ -3,7 +3,6 @@ import { PublicNavbar } from "@/components/layout/PublicNavbar"
 import { supabase } from "@/lib/supabase"
 import { Coffee } from "lucide-react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
 
 export default async function PublicMenuPage() {
   const { data: rawCategories } = await supabase
@@ -29,10 +28,11 @@ export default async function PublicMenuPage() {
           <p className="text-muted-foreground text-lg max-w-xl mx-auto mb-10">
             From signature roasts to fresh bakes, explore our full selection of crafted goodness.
           </p>
-          <Link href="/login">
-            <Button size="lg" className="rounded-full px-10 h-14 text-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl transition-all hover:-translate-y-1">
-              Order Now
-            </Button>
+          <Link
+            href="/login"
+            className="inline-flex items-center justify-center rounded-full px-10 h-14 text-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 shadow-xl transition-all hover:-translate-y-1"
+          >
+            Order Now
           </Link>
         </div>
 

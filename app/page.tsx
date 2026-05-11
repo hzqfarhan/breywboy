@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Coffee, Star, MapPin, Clock, CreditCard } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { auth } from "@/lib/auth";
 
@@ -29,15 +28,17 @@ export default async function LandingPage() {
               Order your favourite coffee ahead of time. Freshly brewed and ready for pickup when you arrive.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Link href={orderHref}>
-                <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 bg-primary text-primary-foreground">
-                  Order Now <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
+              <Link
+                href={orderHref}
+                className="inline-flex items-center justify-center w-full sm:w-auto h-14 px-8 text-lg rounded-full shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 bg-primary text-primary-foreground font-medium"
+              >
+                Order Now <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
-              <Link href={menuHref}>
-                <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full border-2 bg-transparent hover:bg-secondary text-foreground uppercase tracking-widest font-heading">
-                  View Menu
-                </Button>
+              <Link
+                href={menuHref}
+                className="inline-flex items-center justify-center w-full sm:w-auto h-14 px-8 text-lg rounded-full border-2 border-border bg-transparent hover:bg-secondary text-foreground uppercase tracking-widest font-heading font-medium"
+              >
+                View Menu
               </Link>
             </div>
           </div>

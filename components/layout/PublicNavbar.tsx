@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Coffee } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 import { auth } from "@/lib/auth";
 
@@ -17,8 +16,11 @@ export async function PublicNavbar() {
           <Link href={session ? "/app/menu" : "/menu"} className="text-sm font-medium hover:text-primary hidden sm:block">
             Menu
           </Link>
-          <Link href={orderHref}>
-            <Button size="sm" className="rounded-full px-6">{session ? "Dashboard" : "Order Now"}</Button>
+          <Link
+            href={orderHref}
+            className="inline-flex items-center justify-center rounded-full px-6 h-8 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/80 transition-colors"
+          >
+            {session ? "Dashboard" : "Order Now"}
           </Link>
         </div>
       </div>
