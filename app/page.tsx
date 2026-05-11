@@ -3,8 +3,13 @@ import Image from "next/image";
 import { ArrowRight, Coffee, Star, MapPin, Clock, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
+import { auth } from "@/lib/auth";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const session = await auth();
+  const orderHref = session ? "/app" : "/login";
+  const menuHref = session ? "/app/menu" : "/menu";
+
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-background">
       <PublicNavbar />
@@ -24,12 +29,12 @@ export default function LandingPage() {
               Order your favourite coffee ahead of time. Freshly brewed and ready for pickup when you arrive.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Link href="/login">
+              <Link href={orderHref}>
                 <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 bg-primary text-primary-foreground">
                   Order Now <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
-              <Link href="/menu">
+              <Link href={menuHref}>
                 <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full border-2 bg-transparent hover:bg-secondary text-foreground uppercase tracking-widest font-heading">
                   View Menu
                 </Button>
