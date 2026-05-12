@@ -94,8 +94,9 @@ export default async function OrderDetailPage({ params }: { params: { id: string
 
           <div className="grid grid-cols-2 gap-3 text-xs">
             <ReceiptRow label="Order date" value={new Date(order.createdAt).toLocaleString("en-MY", { dateStyle: "medium", timeStyle: "short" })} />
-            <ReceiptRow label="Pickup time" value={new Date(order.pickupTime).toLocaleString("en-MY", { dateStyle: "medium", timeStyle: "short" })} />
-            <ReceiptRow label="Payment method" value={order.paymentMethod === "Counter" ? "Pay at counter" : "Online payment"} />
+            <ReceiptRow label={order.fulfillmentType === "DINE_IN" ? "Serve time" : "Pickup time"} value={new Date(order.pickupTime).toLocaleString("en-MY", { dateStyle: "medium", timeStyle: "short" })} />
+            <ReceiptRow label="Order type" value={getFulfillmentLabel(order.fulfillmentType)} />
+            <ReceiptRow label="Payment method" value={order.paymentMethod === "Counter" ? "Pay at counter" : "Online payment - Stripe pending"} />
             <ReceiptRow label="Payment status" value={order.paymentStatus === "PAID" ? "Paid" : "Payment pending"} />
           </div>
 
@@ -125,6 +126,12 @@ export default async function OrderDetailPage({ params }: { params: { id: string
       </div>
     </div>
   )
+}
+
+function getFulfillmentLabel(value?: string | null) {
+  if (value === "DINE_IN") return "Dine-in"
+  if (value === "WALK_IN") return "Walk-in"
+  return "Takeaway"
 }
 
 function parseCustomizations(customizations: string | null) {

@@ -69,6 +69,7 @@ CREATE TABLE IF NOT EXISTS "Order" (
   "total" DOUBLE PRECISION DEFAULT 0,
   "paymentMethod" TEXT, -- 'Online', 'Counter'
   "paymentStatus" TEXT, -- 'PENDING', 'PAID'
+  "fulfillmentType" TEXT DEFAULT 'PICKUP', -- 'PICKUP', 'DINE_IN', 'WALK_IN'
   "pickupTime" TIMESTAMP WITH TIME ZONE,
   "status" TEXT DEFAULT 'NEW', -- 'NEW', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED'
   "notes" TEXT,

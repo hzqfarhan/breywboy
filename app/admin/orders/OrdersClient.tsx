@@ -17,6 +17,7 @@ type Order = {
   status: string
   paymentMethod: string
   paymentStatus: string
+  fulfillmentType?: string | null
   total: number
   createdAt: string
   notes?: string | null
@@ -98,6 +99,7 @@ function OrderCard({
 }) {
   const itemCount = order.items.reduce((acc, item) => acc + item.quantity, 0)
   const isCounterPending = order.paymentMethod === "Counter" && order.paymentStatus !== "PAID"
+  const fulfillmentLabel = getFulfillmentLabel(order.fulfillmentType)
   
   return (
     <div className="bg-white p-4 rounded-xl shadow-sm border border-border/50">
@@ -115,7 +117,10 @@ function OrderCard({
 
       <div className="mb-2 flex flex-wrap gap-2">
         <span className="rounded-full bg-secondary px-2 py-1 text-[10px] font-bold uppercase text-foreground">
-          {order.paymentMethod === "Counter" ? "Pay at counter" : "Online payment"}
+          {fulfillmentLabel}
+        </span>
+        <span className="rounded-full bg-secondary px-2 py-1 text-[10px] font-bold uppercase text-foreground">
+          {order.paymentMethod === "Counter" ? "Pay at counter" : order.paymentMethod === "Online" ? "Online / Stripe pending" : order.paymentMethod}
         </span>
         <span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase ${
           order.paymentStatus === "PAID" ? "bg-success/20 text-success-foreground" : "bg-warning/20 text-warning-foreground"
@@ -169,4 +174,10 @@ function OrderCard({
       </div>
     </div>
   )
+}
+
+function getFulfillmentLabel(value?: string | null) {
+  if (value === "DINE_IN") return "Dine-in"
+  if (value === "WALK_IN") return "Walk-in"
+  return "Takeaway"
 }

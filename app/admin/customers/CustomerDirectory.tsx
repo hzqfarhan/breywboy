@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Dialog,
   DialogContent,
@@ -10,7 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { UserRound } from "lucide-react"
+import { ArrowDownWideNarrow, ArrowUpWideNarrow, Search, UserRound } from "lucide-react"
 
 type Customer = {
   id: string
@@ -25,22 +26,68 @@ type Customer = {
 
 export function CustomerDirectory({ customers }: { customers: Customer[] }) {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [sortDirection, setSortDirection] = useState<"desc" | "asc">("desc")
+
+  const filteredCustomers = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase()
+
+    return customers
+      .filter((customer) => {
+        if (!normalizedQuery) return true
+
+        return [
+          customer.name,
+          customer.email,
+          customer.phone,
+        ].some((value) => value?.toLowerCase().includes(normalizedQuery))
+      })
+      .sort((a, b) => {
+        const pointsA = a.points || 0
+        const pointsB = b.points || 0
+
+        return sortDirection === "desc" ? pointsB - pointsA : pointsA - pointsB
+      })
+  }, [customers, searchQuery, sortDirection])
 
   return (
     <>
+      <div className="flex flex-col gap-3 rounded-2xl border bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
+        <div className="relative w-full md:max-w-sm">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search nickname, email, or phone..."
+            className="h-9 rounded-full pl-9"
+          />
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => setSortDirection((current) => current === "desc" ? "asc" : "desc")}
+          className="justify-center rounded-full"
+        >
+          {sortDirection === "desc" ? (
+            <ArrowDownWideNarrow className="h-4 w-4" />
+          ) : (
+            <ArrowUpWideNarrow className="h-4 w-4" />
+          )}
+          Points {sortDirection === "desc" ? "High to Low" : "Low to High"}
+        </Button>
+      </div>
+
       <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>No.</TableHead>
               <TableHead>Customer</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Email</TableHead>
+              <TableHead>Points</TableHead>
               <TableHead className="text-right">Details</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {customers.map((customer, index) => (
+            {filteredCustomers.map((customer, index) => (
               <TableRow key={customer.id}>
                 <TableCell className="font-mono text-sm">{index + 1}</TableCell>
                 <TableCell>
@@ -49,8 +96,11 @@ export function CustomerDirectory({ customers }: { customers: Customer[] }) {
                     <span className="font-medium">{customer.name || "No nickname"}</span>
                   </div>
                 </TableCell>
-                <TableCell>{customer.phone || "-"}</TableCell>
-                <TableCell>{customer.email || "-"}</TableCell>
+                <TableCell>
+                  <span className="rounded-full bg-secondary px-3 py-1 font-mono text-sm font-bold text-primary">
+                    {customer.points || 0}
+                  </span>
+                </TableCell>
                 <TableCell className="text-right">
                   <Button variant="outline" size="sm" onClick={() => setSelectedCustomer(customer)}>
                     View
@@ -58,10 +108,10 @@ export function CustomerDirectory({ customers }: { customers: Customer[] }) {
                 </TableCell>
               </TableRow>
             ))}
-            {customers.length === 0 && (
+            {filteredCustomers.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
-                  No registered customers yet.
+                <TableCell colSpan={4} className="py-10 text-center text-sm text-muted-foreground">
+                  {customers.length === 0 ? "No registered customers yet." : "No customers match your search."}
                 </TableCell>
               </TableRow>
             )}

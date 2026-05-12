@@ -18,6 +18,7 @@ type Order = {
   total: number
   paymentMethod: string
   paymentStatus: string
+  fulfillmentType?: string | null
   createdAt: string
   items: OrderItem[]
 }
@@ -89,9 +90,9 @@ function OrderCard({ order }: { order: Order }) {
               <p className="text-xs text-muted-foreground">
                 {itemCount} items • RM{order.total.toFixed(2)}
               </p>
-              <p className="text-[10px] font-medium text-muted-foreground">
-                {order.paymentMethod === "Counter" ? "Pay at counter" : "Online"} - {order.paymentStatus === "PAID" ? "Paid" : "Payment pending"}
-              </p>
+            <p className="text-[10px] font-medium text-muted-foreground">
+              {getFulfillmentLabel(order.fulfillmentType)} - {order.paymentMethod === "Counter" ? "Pay at counter" : "Online"} - {order.paymentStatus === "PAID" ? "Paid" : "Payment pending"}
+            </p>
               <p className="text-[10px] text-muted-foreground/60 mt-1">
                 {new Date(order.createdAt).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
               </p>
@@ -111,4 +112,10 @@ function OrderCard({ order }: { order: Order }) {
       </div>
     </div>
   )
+}
+
+function getFulfillmentLabel(value?: string | null) {
+  if (value === "DINE_IN") return "Dine-in"
+  if (value === "WALK_IN") return "Walk-in"
+  return "Takeaway"
 }

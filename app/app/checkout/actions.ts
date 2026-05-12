@@ -8,7 +8,8 @@ import { redirect } from "next/navigation"
 export async function createOrderAction(
   cartItems: CartItem[],
   paymentMethod: string,
-  pickupTime: string
+  pickupTime: string,
+  fulfillmentType: string
 ) {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")
@@ -17,7 +18,8 @@ export async function createOrderAction(
     session.user.id,
     cartItems,
     paymentMethod,
-    pickupTime
+    pickupTime,
+    fulfillmentType
   )
 
   redirect(`/app/orders/${order.id}`)

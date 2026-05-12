@@ -93,7 +93,8 @@ export async function createOrder(
   userId: string,
   cartItems: CartItem[],
   paymentMethod: string,
-  pickupTime: string
+  pickupTime: string,
+  fulfillmentType = 'PICKUP'
 ) {
   let subtotal = 0
   const orderItemsData = []
@@ -154,8 +155,9 @@ export async function createOrder(
       subtotal,
       total: subtotal,
       paymentMethod,
-      paymentStatus: paymentMethod === 'Online' ? 'PAID' : 'PENDING',
+      paymentStatus: paymentMethod === 'Online' ? 'PENDING' : 'PENDING',
       pickupTime: pickupDate,
+      fulfillmentType,
       status: 'NEW',
     })
     .select()
@@ -241,6 +243,7 @@ export async function createWalkInOrder(
       paymentMethod,
       paymentStatus: 'PAID',
       pickupTime: pickupDate,
+      fulfillmentType: 'WALK_IN',
       status: 'NEW',
       notes: cleanNotes || null,
     })

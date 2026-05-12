@@ -45,8 +45,9 @@ export default async function ReceiptPage({ params }: { params: { id: string } }
               <ReceiptField label="Order" value={`#${order.orderNumber}`} />
               <ReceiptField label="Status" value={order.status} />
               <ReceiptField label="Date" value={new Date(order.createdAt).toLocaleString("en-MY", { dateStyle: "medium", timeStyle: "short" })} />
-              <ReceiptField label="Pickup" value={new Date(order.pickupTime).toLocaleString("en-MY", { dateStyle: "medium", timeStyle: "short" })} />
-              <ReceiptField label="Payment" value={order.paymentMethod === "Counter" ? "Pay at counter" : "Online payment"} />
+              <ReceiptField label={order.fulfillmentType === "DINE_IN" ? "Serve" : "Pickup"} value={new Date(order.pickupTime).toLocaleString("en-MY", { dateStyle: "medium", timeStyle: "short" })} />
+              <ReceiptField label="Type" value={getFulfillmentLabel(order.fulfillmentType)} />
+              <ReceiptField label="Payment" value={order.paymentMethod === "Counter" ? "Pay at counter" : "Online - Stripe pending"} />
               <ReceiptField label="Paid" value={order.paymentStatus === "PAID" ? "Yes" : "Pending"} />
             </div>
 
@@ -97,6 +98,12 @@ export default async function ReceiptPage({ params }: { params: { id: string } }
       </main>
     </div>
   )
+}
+
+function getFulfillmentLabel(value?: string | null) {
+  if (value === "DINE_IN") return "Dine-in"
+  if (value === "WALK_IN") return "Walk-in"
+  return "Takeaway"
 }
 
 function ReceiptField({ label, value }: { label: string, value: string }) {
