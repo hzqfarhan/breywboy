@@ -32,16 +32,6 @@ export async function getAddOns() {
   return data || []
 }
 
-/** All categories for admin forms */
-export async function getAllCategories() {
-  const { data, error } = await supabase
-    .from('Category')
-    .select('*')
-    .order('sortOrder', { ascending: true })
-
-  if (error) console.error('[menu] getAllCategories:', error.message)
-  return data || []
-}
 
 /** Popular products for the customer dashboard */
 export async function getPopularProducts(limit = 4) {

@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { getAllCategories, getAllProducts } from "@/lib/supabase/menu"
+import { getAllCategories, getAllProducts } from "@/lib/supabase"
 import { MenuClient } from "./MenuClient"
 
 export default async function AdminMenuPage() {
