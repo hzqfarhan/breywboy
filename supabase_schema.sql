@@ -6,6 +6,8 @@ DROP TABLE IF EXISTS "Category" CASCADE;
 DROP TABLE IF EXISTS "User" CASCADE;
 DROP TABLE IF EXISTS "AddOn" CASCADE;
 DROP TABLE IF EXISTS "Reward" CASCADE;
+DROP TABLE IF EXISTS "Promo" CASCADE;
+DROP TABLE IF EXISTS "RewardRedemption" CASCADE;
 
 -- 1. Create Tables
 
@@ -27,7 +29,7 @@ CREATE TABLE IF NOT EXISTS "User" (
 CREATE TABLE IF NOT EXISTS "Category" (
   "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "name" TEXT NOT NULL,
-  "slug" TEXT, -- Added to match existing schema
+  "slug" TEXT,
   "sortOrder" INTEGER DEFAULT 0,
   "isActive" BOOLEAN DEFAULT true
 );
@@ -60,6 +62,22 @@ CREATE TABLE IF NOT EXISTS "AddOn" (
   "isAvailable" BOOLEAN DEFAULT true
 );
 
+-- Promo Table
+CREATE TABLE IF NOT EXISTS "Promo" (
+  "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "code" TEXT UNIQUE NOT NULL,
+  "description" TEXT,
+  "discountType" TEXT NOT NULL,          -- 'PERCENTAGE' or 'FIXED'
+  "discountValue" DOUBLE PRECISION NOT NULL,
+  "minOrderAmount" DOUBLE PRECISION DEFAULT 0,
+  "maxUses" INTEGER,
+  "currentUses" INTEGER DEFAULT 0,
+  "isActive" BOOLEAN DEFAULT true,
+  "startsAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  "expiresAt" TIMESTAMP WITH TIME ZONE,
+  "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Orders Table
 CREATE TABLE IF NOT EXISTS "Order" (
   "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
@@ -67,6 +85,9 @@ CREATE TABLE IF NOT EXISTS "Order" (
   "orderNumber" TEXT UNIQUE,
   "subtotal" DOUBLE PRECISION DEFAULT 0,
   "total" DOUBLE PRECISION DEFAULT 0,
+  "discount" DOUBLE PRECISION DEFAULT 0,
+  "promoId" TEXT REFERENCES "Promo"("id") ON DELETE SET NULL,
+  "promoCode" TEXT,
   "paymentMethod" TEXT, -- 'Online', 'Counter'
   "paymentStatus" TEXT, -- 'PENDING', 'PAID'
   "fulfillmentType" TEXT DEFAULT 'PICKUP', -- 'PICKUP', 'DINE_IN', 'WALK_IN'
@@ -95,6 +116,17 @@ CREATE TABLE IF NOT EXISTS "Reward" (
   "description" TEXT,
   "pointsRequired" INTEGER DEFAULT 0,
   "isActive" BOOLEAN DEFAULT true
+);
+
+-- Reward Redemption Table
+CREATE TABLE IF NOT EXISTS "RewardRedemption" (
+  "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "userId" TEXT REFERENCES "User"("id") ON DELETE CASCADE,
+  "rewardId" TEXT REFERENCES "Reward"("id") ON DELETE SET NULL,
+  "rewardNameSnapshot" TEXT,
+  "pointsSpent" INTEGER NOT NULL,
+  "status" TEXT DEFAULT 'PENDING',       -- 'PENDING', 'USED', 'EXPIRED'
+  "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 2. Insert Initial Data (Categories)
@@ -157,9 +189,3 @@ INSERT INTO "Product" ("id", "name", "description", "categoryId", "basePrice", "
 ('p-curly-fries', 'Curly Fries', 'Crispy curly fries.', 'cat-snacks', 8, false, false, false, false, false, false),
 ('p-tempura', 'Chicken Tempura 8pcs', 'Chicken tempura, 8 pieces.', 'cat-snacks', 10, false, false, false, false, false, false),
 ('p-toast', 'Steamed Toast with Kaya Butter', 'Steamed toast served with kaya butter.', 'cat-snacks', 3, false, false, false, false, false, false);
-
--- 5. Enable RLS (Optional - depending on if you use Service Role or Anon)
--- For a simple demo, you can leave RLS disabled or set it to allow all.
--- ALTER TABLE "User" ENABLE ROW LEVEL SECURITY;
--- CREATE POLICY "Allow public access" ON "User" FOR ALL USING (true);
--- (Repeat for other tables)

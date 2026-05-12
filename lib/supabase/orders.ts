@@ -94,7 +94,8 @@ export async function createOrder(
   cartItems: CartItem[],
   paymentMethod: string,
   pickupTime: string,
-  fulfillmentType = 'PICKUP'
+  fulfillmentType = 'PICKUP',
+  promoData?: { id: string, code: string, discount: number }
 ) {
   let subtotal = 0
   const orderItemsData = []
@@ -159,6 +160,10 @@ export async function createOrder(
       pickupTime: pickupDate,
       fulfillmentType,
       status: 'NEW',
+      promoId: promoData?.id || null,
+      promoCode: promoData?.code || null,
+      discount: promoData?.discount || 0,
+      total: subtotal - (promoData?.discount || 0),
     })
     .select()
     .single()

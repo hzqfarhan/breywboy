@@ -1,17 +1,19 @@
 export const dynamic = "force-dynamic";
 import { auth } from "@/lib/auth"
 import { getUserById } from "@/lib/supabase/users"
-import { getActiveRewards } from "@/lib/supabase/rewards"
+import { getActiveRewards, getUserRedemptions } from "@/lib/supabase/rewards"
 import { CustomerTopBar } from "@/components/layout/CustomerTopBar"
-import { Gift, Star, Trophy, ArrowRight } from "lucide-react"
+import { Gift, Star, Trophy, ArrowRight, History } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { RedemptionButton } from "./RedemptionButton"
 
 export default async function RewardsPage() {
   const session = await auth()
 
-  const [user, rewards] = await Promise.all([
+  const [user, rewards, history] = await Promise.all([
     getUserById(session?.user?.id || ''),
     getActiveRewards(),
+    getUserRedemptions(session?.user?.id || ''),
   ])
 
 
@@ -100,19 +102,38 @@ export default async function RewardsPage() {
                     <span className={`font-mono font-bold ${canRedeem ? 'text-primary' : 'text-muted-foreground'}`}>
                       {reward.pointsRequired} pts
                     </span>
-                    <Button 
-                      size="sm" 
-                      variant={canRedeem ? "default" : "secondary"}
-                      className={canRedeem ? "bg-primary rounded-full px-4 text-xs h-7" : "rounded-full px-4 text-xs h-7 pointer-events-none"}
-                    >
-                      Redeem
-                    </Button>
+                    <RedemptionButton rewardId={reward.id} canRedeem={canRedeem} />
                   </div>
                 </div>
               )
             })}
           </div>
-        </section>
+        {/* Redemption History */}
+        {history.length > 0 && (
+          <section className="space-y-4">
+            <h3 className="font-heading font-bold text-xl text-primary flex items-center gap-2">
+              <History className="w-5 h-5" />
+              Redemption History
+            </h3>
+            <div className="space-y-2">
+              {history.map(item => (
+                <div key={item.id} className="p-3 rounded-xl bg-secondary/50 border border-border flex justify-between items-center text-sm">
+                  <div>
+                    <p className="font-bold">{item.rewardNameSnapshot}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {new Date(item.createdAt).toLocaleDateString()} • {item.pointsSpent} pts spent
+                    </p>
+                  </div>
+                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                    item.status === 'USED' ? 'bg-success/20 text-success-foreground' : 'bg-warning/20 text-warning-foreground'
+                  }`}>
+                    {item.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
       </div>
     </div>

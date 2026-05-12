@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { markOrderPaid, updateOrderStatus } from "./actions"
 import { Button } from "@/components/ui/button"
-import { Clock, CheckCircle2, ArrowRight, Banknote } from "lucide-react"
+import { Clock, CheckCircle2, ArrowRight, Banknote, ReceiptText } from "lucide-react"
 
 type OrderItem = {
   id: string
@@ -141,6 +141,18 @@ function OrderCard({
       <div className="flex justify-between items-center mb-3">
         <span className="text-xs text-muted-foreground">{itemCount} items</span>
         <span className="font-mono font-bold text-primary">RM{order.total.toFixed(2)}</span>
+      </div>
+
+      <div className="flex gap-2 mb-2">
+        <a 
+          href={`/app/orders/${order.id}/receipt`} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="flex-1 text-center py-2 rounded-lg bg-secondary text-[10px] font-bold uppercase hover:bg-secondary/80 transition-colors flex items-center justify-center gap-1"
+        >
+          <ReceiptText className="w-3 h-3" />
+          View Receipt
+        </a>
       </div>
 
       {isCounterPending && (

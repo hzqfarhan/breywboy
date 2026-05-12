@@ -1,1 +1,20 @@
-﻿export default function Page() { return <div className="p-6 bg-white rounded-2xl border shadow-sm"><h2 className="text-xl font-bold font-heading mb-2">Module Coming Soon</h2><p className="text-muted-foreground">This admin module is under construction.</p></div> }
+export const dynamic = "force-dynamic";
+import { getAllPromos } from "@/lib/supabase/promos"
+import { PromosClient } from "./PromosClient"
+
+export default async function PromosPage() {
+  const promos = await getAllPromos()
+
+  return (
+    <div className="h-full flex flex-col">
+      <div className="flex justify-between items-end mb-6">
+        <div>
+          <h2 className="text-2xl font-heading font-bold text-primary">Promo Management</h2>
+          <p className="text-muted-foreground text-sm">Create and manage discount codes</p>
+        </div>
+      </div>
+      
+      <PromosClient initialPromos={promos} />
+    </div>
+  )
+}

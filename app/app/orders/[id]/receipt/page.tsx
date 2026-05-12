@@ -22,7 +22,10 @@ export default async function ReceiptPage({ params }: { params: { id: string } }
   const session = await auth()
   const order = await getOrderById(params.id)
 
-  if (!order || order.userId !== session?.user?.id) {
+  const isAdmin = session?.user?.role === "ADMIN"
+  const isOwner = order?.userId === session?.user?.id
+
+  if (!order || (!isOwner && !isAdmin)) {
     notFound()
   }
 
@@ -75,6 +78,12 @@ export default async function ReceiptPage({ params }: { params: { id: string } }
 
             <div className="space-y-2">
               <TotalRow label="Subtotal" value={order.subtotal} />
+              {order.discount > 0 && (
+                <div className="flex justify-between text-sm text-success-foreground font-medium italic">
+                  <span>Discount ({order.promoCode || 'Promo'})</span>
+                  <span className="font-mono">-RM{order.discount.toFixed(2)}</span>
+                </div>
+              )}
               <TotalRow label="Total" value={order.total} strong />
             </div>
 

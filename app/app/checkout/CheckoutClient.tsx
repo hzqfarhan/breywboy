@@ -2,9 +2,9 @@
 
 import { useCartStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Clock, MapPin, CheckCircle2, CreditCard, Coffee, Utensils } from "lucide-react";
+import { ArrowRight, Clock, MapPin, CheckCircle2, CreditCard, Coffee, Utensils, Tag, Loader2 } from "lucide-react";
 import { useState, useTransition } from "react";
-import { createOrderAction } from "./actions";
+import { createOrderAction, validatePromoAction } from "./actions";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
@@ -13,6 +13,10 @@ export function CheckoutClient() {
   const [fulfillmentType, setFulfillmentType] = useState("PICKUP");
   const [pickupTime, setPickupTime] = useState("ASAP");
   const [paymentMethod, setPaymentMethod] = useState("Counter");
+  const [promoCode, setPromoCode] = useState("");
+  const [promoData, setPromoData] = useState<{ id: string, code: string, discount: number } | null>(null);
+  const [promoError, setPromoError] = useState("");
+  const [isValidating, setIsValidating] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -24,13 +28,34 @@ export function CheckoutClient() {
   const handleCheckout = () => {
     startTransition(async () => {
       try {
-        await createOrderAction(items, paymentMethod, pickupTime, fulfillmentType);
+        await createOrderAction(items, paymentMethod, pickupTime, fulfillmentType, promoData || undefined);
         clearCart();
       } catch (e) {
         console.error(e);
       }
     });
   };
+
+  const handleApplyPromo = async () => {
+    if (!promoCode) return;
+    setIsValidating(true);
+    setPromoError("");
+    try {
+      const result = await validatePromoAction(promoCode, getCartTotal());
+      if (result.success && result.promo) {
+        setPromoData(result.promo);
+      } else {
+        setPromoError(result.message || "Invalid promo code");
+        setPromoData(null);
+      }
+    } catch (e) {
+      setPromoError("Failed to validate promo code");
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  const finalTotal = getCartTotal() - (promoData?.discount || 0);
 
   return (
     <div className="flex-1 p-4 pb-48 space-y-6">
@@ -146,6 +171,40 @@ export function CheckoutClient() {
         </div>
       </section>
 
+      {/* Promo Code */}
+      <section className="space-y-3">
+        <h3 className="font-heading font-bold text-lg uppercase tracking-wide">Promo Code</h3>
+        <div className="bg-white p-4 rounded-2xl border border-border">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                value={promoCode}
+                onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                placeholder="Enter Code"
+                className="w-full pl-9 pr-3 py-2 bg-secondary border-none rounded-xl text-sm focus:ring-2 focus:ring-primary uppercase font-bold"
+              />
+            </div>
+            <Button 
+              size="sm" 
+              className="rounded-xl px-4" 
+              onClick={handleApplyPromo}
+              disabled={isValidating || !promoCode}
+            >
+              {isValidating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
+            </Button>
+          </div>
+          {promoError && <p className="mt-2 text-xs text-destructive font-medium">{promoError}</p>}
+          {promoData && (
+            <div className="mt-2 flex items-center justify-between bg-success/10 p-2 rounded-lg border border-success/20">
+              <span className="text-xs text-success-foreground font-bold">Applied: {promoData.code}</span>
+              <button onClick={() => {setPromoData(null); setPromoCode("");}} className="text-[10px] underline text-muted-foreground">Remove</button>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Order Summary */}
       <section className="bg-white p-4 rounded-2xl border border-border space-y-3">
         <h4 className="font-bold text-sm mb-1 uppercase tracking-wide">Payment Summary</h4>
@@ -161,9 +220,15 @@ export function CheckoutClient() {
           <span className="text-muted-foreground">Payment</span>
           <span className="font-medium">{paymentMethod === "Online" ? "Online - pending Stripe" : "Pay at counter"}</span>
         </div>
+        {promoData && (
+          <div className="flex justify-between text-sm text-success-foreground font-medium italic">
+            <span>Discount ({promoData.code})</span>
+            <span className="font-mono">-RM{promoData.discount.toFixed(2)}</span>
+          </div>
+        )}
         <div className="pt-3 border-t flex justify-between font-bold text-lg text-primary">
           <span>Total</span>
-          <span className="font-mono">RM{getCartTotal().toFixed(2)}</span>
+          <span className="font-mono">RM{finalTotal.toFixed(2)}</span>
         </div>
       </section>
 
