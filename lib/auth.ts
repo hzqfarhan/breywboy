@@ -1,6 +1,8 @@
 import NextAuth from "next-auth"
 import { authConfig } from "@/auth.config"
 import CredentialsProvider from "next-auth/providers/credentials"
+import GoogleProvider from "next-auth/providers/google"
+import { supabase } from "@/lib/supabase"
 
 // Hardcoded demo accounts — always work, no DB required
 const DEMO_USERS = [
@@ -70,7 +72,75 @@ const authResult = NextAuth({
         }
       },
     }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
   ],
+  callbacks: {
+    ...authConfig.callbacks,
+    async signIn({ user, account, profile }) {
+      if (account?.provider === "google") {
+        const email = user.email
+        if (!email) return false
+
+        try {
+          // Check if user exists in our DB
+          const { data: existingUser, error: fetchError } = await supabase
+            .from("User")
+            .select("*")
+            .eq("email", email)
+            .single()
+
+          const adminEmail = "haziqfarhan174@gmail.com"
+          const role = email === adminEmail ? "ADMIN" : "CUSTOMER"
+
+          if (!existingUser) {
+            // Create new user in Supabase
+            const { error: insertError } = await supabase.from("User").insert({
+              id: user.id,
+              email: email,
+              name: user.name,
+              avatarUrl: user.image,
+              role: role,
+              points: 0
+            })
+            if (insertError) {
+              console.error("[auth] Error creating OAuth user:", insertError.message)
+              return true // Still allow sign in even if DB record fails (fallback to session)
+            }
+          } else {
+            // Update existing user with Google info if needed (name/avatar)
+            const { error: updateError } = await supabase
+              .from("User")
+              .update({ 
+                name: existingUser.name || user.name,
+                avatarUrl: existingUser.avatarUrl || user.image,
+                role: existingUser.role === 'ADMIN' || role === 'ADMIN' ? 'ADMIN' : 'CUSTOMER'
+              })
+              .eq("email", email)
+            
+            if (updateError) console.error("[auth] Error updating OAuth user:", updateError.message)
+          }
+          
+          // Attach the role to the user object so it gets picked up by the JWT callback
+          if (existingUser) {
+            (user as any).role = existingUser.role
+            (user as any).avatarUrl = existingUser.avatarUrl
+          } else {
+            (user as any).role = role
+            (user as any).avatarUrl = user.image
+          }
+          
+          return true
+        } catch (error) {
+          console.error("[auth] OAuth signIn error:", error)
+          return true
+        }
+      }
+      return true
+    }
+  }
 })
 
 export const { handlers, auth, signIn, signOut } = authResult

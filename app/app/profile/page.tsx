@@ -20,8 +20,12 @@ export default async function ProfilePage() {
         
         {/* User Card */}
         <div className="bg-white p-6 rounded-3xl shadow-sm border text-center flex flex-col items-center">
-          <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mb-4 text-primary">
-            <User className="w-10 h-10" />
+          <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mb-4 text-primary overflow-hidden">
+            {user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
+            ) : (
+              <User className="w-10 h-10" />
+            )}
           </div>
           <h2 className="text-xl font-heading font-bold mb-1">{user?.name}</h2>
           <p className="text-sm text-muted-foreground mb-4">{user?.email}</p>

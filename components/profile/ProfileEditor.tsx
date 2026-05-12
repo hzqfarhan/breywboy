@@ -48,7 +48,7 @@ export function ProfileEditor({ user }: { user: any }) {
     <>
       <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
         <ProfileRow icon={<UserIcon />} label="Personal Details" value={user?.name || ''} onClick={() => handleRowClick('name')} hasArrow />
-        <ProfileRow icon={<Mail />} label="Email Address" value="yunn@seladevs.my" onClick={() => handleRowClick('email')} />
+        <ProfileRow icon={<Mail />} label="Email Address" value={user?.email || ''} onClick={() => handleRowClick('email')} />
         <ProfileRow icon={<Phone />} label="Phone Number" value={user?.phone || 'Not provided'} onClick={() => handleRowClick('phone')} hasArrow />
         <ProfileRow icon={<Heart className="text-destructive" />} label="Favourite Drink" value={user?.favouriteDrink || 'Not set'} onClick={() => handleRowClick('favouriteDrink')} hasArrow />
         <Link href="/app/profile/about" className="block">

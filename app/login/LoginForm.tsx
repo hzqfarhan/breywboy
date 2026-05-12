@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { authenticate } from "./actions";
+import { authenticate, signInWithGoogle } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Coffee, ShieldCheck, Mail, Lock } from "lucide-react";
 
@@ -13,38 +13,21 @@ export function LoginForm() {
 
   return (
     <div className="w-full max-w-sm space-y-8">
-      {/* Demo Quick Login Buttons */}
+      {/* Google Login Button */}
       <div className="space-y-4">
-        <div className="text-center mb-6">
-          <span className="bg-accent/20 text-accent text-xs font-bold px-3 py-1 rounded-full">
-            Demo Mode Active
-          </span>
-        </div>
-        
-        <form action={dispatch}>
-          <input type="hidden" name="role" value="CUSTOMER" />
+        <form action={signInWithGoogle}>
           <Button 
             type="submit" 
             disabled={isPending}
-            className="w-full h-16 text-lg rounded-2xl flex items-center justify-center gap-3 shadow-md hover:-translate-y-1 transition-transform"
+            className="w-full h-16 text-lg rounded-2xl flex items-center justify-center gap-4 shadow-lg hover:-translate-y-1 transition-all bg-white text-primary border-2 border-primary/10 hover:bg-secondary/50"
           >
-            <Coffee className="w-6 h-6" />
-            Login as Customer
+            <img src="https://authjs.dev/img/providers/google.svg" alt="Google" className="w-6 h-6" />
+            <span className="font-bold">Continue with Google</span>
           </Button>
         </form>
-
-        <form action={dispatch}>
-          <input type="hidden" name="role" value="ADMIN" />
-          <Button 
-            variant="outline"
-            type="submit" 
-            disabled={isPending}
-            className="w-full h-16 text-lg rounded-2xl flex items-center justify-center gap-3 border-2 border-primary text-primary hover:bg-primary/5 hover:-translate-y-1 transition-transform"
-          >
-            <ShieldCheck className="w-6 h-6" />
-            Login as Admin
-          </Button>
-        </form>
+        <p className="text-[10px] text-center text-muted-foreground px-4 italic">
+          Google login will automatically detect your role based on your email.
+        </p>
       </div>
 
       <div className="relative">

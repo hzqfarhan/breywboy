@@ -41,3 +41,7 @@ export async function authenticate(
     throw error
   }
 }
+
+export async function signInWithGoogle() {
+  await signIn("google")
+}

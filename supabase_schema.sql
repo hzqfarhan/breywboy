@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS "User" (
   "points" INTEGER DEFAULT 0,
   "phone" TEXT,
   "favouriteDrink" TEXT,
+  "avatarUrl" TEXT,
   "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
