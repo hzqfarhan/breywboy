@@ -161,6 +161,34 @@ CREATE INDEX IF NOT EXISTS "idx_recipe_active_product" ON "Recipe" ("productId",
 
 INSERT INTO "InventorySetting" ("id") VALUES ('default') ON CONFLICT ("id") DO NOTHING;
 
+INSERT INTO "Promo" ("id", "code", "description", "discountType", "discountValue", "minOrderAmount", "maxUses", "currentUses", "isActive", "startsAt", "expiresAt") VALUES
+('promo-welcome10', 'WELCOME10', '10% off for first Breywboy online orders.', 'PERCENTAGE', 10, 10, 200, 0, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '90 days'),
+('promo-kopi5', 'KOPI5', 'RM5 off orders RM30 and above.', 'FIXED', 5, 30, 150, 0, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '60 days'),
+('promo-matcha12', 'MATCHA12', '12% off Matcha Series campaign.', 'PERCENTAGE', 12, 12, 120, 0, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '45 days'),
+('promo-pasta3', 'PASTA3', 'RM3 off pasta orders RM20 and above.', 'FIXED', 3, 20, 100, 0, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '45 days'),
+('promo-student15', 'STUDENT15', '15% student promo for selected cafe orders.', 'PERCENTAGE', 15, 15, 100, 0, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '30 days')
+ON CONFLICT ("code") DO UPDATE SET
+"description" = EXCLUDED."description",
+"discountType" = EXCLUDED."discountType",
+"discountValue" = EXCLUDED."discountValue",
+"minOrderAmount" = EXCLUDED."minOrderAmount",
+"maxUses" = EXCLUDED."maxUses",
+"isActive" = EXCLUDED."isActive",
+"startsAt" = EXCLUDED."startsAt",
+"expiresAt" = EXCLUDED."expiresAt";
+
+INSERT INTO "Reward" ("id", "name", "description", "pointsRequired", "isActive") VALUES
+('reward-rm3-voucher', 'RM3 Breywboy Voucher', 'Redeem RM3 off your next Breywboy order.', 30, true),
+('reward-free-toast', 'Free Kaya Butter Toast', 'Redeem one steamed toast with kaya butter.', 45, true),
+('reward-free-extra-shot', 'Free Extra Shot', 'Redeem one extra espresso shot add-on.', 50, true),
+('reward-free-iced-americano', 'Free Iced Americano', 'Redeem one iced Americano.', 80, true),
+('reward-rm10-voucher', 'RM10 Breywboy Voucher', 'Redeem RM10 off a larger cafe order.', 100, true)
+ON CONFLICT ("id") DO UPDATE SET
+"name" = EXCLUDED."name",
+"description" = EXCLUDED."description",
+"pointsRequired" = EXCLUDED."pointsRequired",
+"isActive" = EXCLUDED."isActive";
+
 INSERT INTO "Supplier" ("id", "name", "phone", "email", "address") VALUES
 ('sup-brey-main', 'Breywboy Main Supplier', '012-0000000', 'supplier@breywboy.local', 'Johor Bahru'),
 ('sup-packaging', 'JB Packaging Supply', '012-1111111', 'packaging@breywboy.local', 'Johor Bahru')

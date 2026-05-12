@@ -10,7 +10,6 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Plus, Pencil, Trash2, Tags, Calendar } from "lucide-react"
 
 type Promo = {
@@ -104,7 +103,7 @@ export function PromosClient({ initialPromos }: { initialPromos: Promo[] }) {
                     <p className="text-[10px] text-muted-foreground">Min RM{promo.minOrderAmount.toFixed(2)}</p>
                   </TableCell>
                   <TableCell>
-                    <p className="text-sm">{promo.currentUses} / {promo.maxUses || '∞'}</p>
+                    <p className="text-sm">{promo.currentUses} / {promo.maxUses || 'Unlimited'}</p>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
