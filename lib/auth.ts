@@ -93,7 +93,7 @@ const authResult = NextAuth({
             .single()
 
           const adminEmail = "haziqfarhan174@gmail.com"
-          const role = email === adminEmail ? "ADMIN" : "CUSTOMER"
+          const assignedRole = email === adminEmail ? "ADMIN" : "CUSTOMER"
 
           if (!existingUser) {
             // Create new user in Supabase
@@ -102,7 +102,7 @@ const authResult = NextAuth({
               email: email,
               name: user.name,
               avatarUrl: user.image,
-              role: role,
+              role: assignedRole,
               points: 0
             })
             if (insertError) {
@@ -116,7 +116,7 @@ const authResult = NextAuth({
               .update({ 
                 name: existingUser.name || user.name,
                 avatarUrl: existingUser.avatarUrl || user.image,
-                role: existingUser.role === 'ADMIN' || role === 'ADMIN' ? 'ADMIN' : 'CUSTOMER'
+                role: existingUser.role === 'ADMIN' || assignedRole === 'ADMIN' ? 'ADMIN' : 'CUSTOMER'
               })
               .eq("email", email)
             
@@ -125,11 +125,11 @@ const authResult = NextAuth({
           
           // Attach the role to the user object so it gets picked up by the JWT callback
           if (existingUser) {
-            (user as any).role = existingUser.role
-            (user as any).avatarUrl = existingUser.avatarUrl
+            (user as any).role = existingUser.role;
+            (user as any).avatarUrl = existingUser.avatarUrl;
           } else {
-            (user as any).role = role
-            (user as any).avatarUrl = user.image
+            (user as any).role = assignedRole;
+            (user as any).avatarUrl = user.image;
           }
           
           return true
