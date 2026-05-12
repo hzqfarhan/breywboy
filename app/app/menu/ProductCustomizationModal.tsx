@@ -13,7 +13,8 @@ type Product = {
   id: string, name: string, description: string | null, isPopular: boolean, categoryId: string,
   basePrice: number | null, hotPrice: number | null, icedPrice: number | null,
   hasTemperatureOption: boolean, allowHot: boolean, allowIced: boolean,
-  allowOatMilk: boolean, allowExtraShot: boolean 
+  allowOatMilk: boolean, allowExtraShot: boolean,
+  imageUrl?: string | null
 };
 type AddOn = { id: string, name: string, price: number };
 
