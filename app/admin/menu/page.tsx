@@ -1,9 +1,12 @@
 export const dynamic = "force-dynamic";
-import { getAllProducts } from "@/lib/supabase/menu"
+import { getAllCategories, getAllProducts } from "@/lib/supabase/menu"
 import { MenuClient } from "./MenuClient"
 
 export default async function AdminMenuPage() {
-  const products = await getAllProducts()
+  const [products, categories] = await Promise.all([
+    getAllProducts(),
+    getAllCategories(),
+  ])
 
   return (
     <div className="h-full flex flex-col">
@@ -14,7 +17,7 @@ export default async function AdminMenuPage() {
         </div>
       </div>
       
-      <MenuClient initialProducts={products} />
+      <MenuClient initialProducts={products} categories={categories} />
     </div>
   )
 }

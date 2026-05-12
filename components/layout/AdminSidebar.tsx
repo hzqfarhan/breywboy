@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, ShoppingBag, Coffee, ListTree, Tags, Gift, Users, Settings, X } from "lucide-react"
+import { LayoutDashboard, ShoppingBag, Coffee, ListTree, Tags, Gift, Users, Settings, X, Eye } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useUIStore } from "@/lib/store"
 
@@ -10,6 +10,7 @@ const routes = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { href: "/admin/menu", label: "Menu", icon: Coffee },
+  { href: "/admin/storefront", label: "Storefront View", icon: Eye },
   { href: "/admin/categories", label: "Categories", icon: ListTree },
   { href: "/admin/promos", label: "Promos", icon: Tags },
   { href: "/admin/rewards", label: "Rewards", icon: Gift },

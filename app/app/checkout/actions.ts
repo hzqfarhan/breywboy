@@ -1,11 +1,12 @@
 "use server"
 
 import { auth } from "@/lib/auth"
+import type { CartItem } from "@/lib/store"
 import { createOrder } from "@/lib/supabase/orders"
 import { redirect } from "next/navigation"
 
 export async function createOrderAction(
-  cartItems: any[],
+  cartItems: CartItem[],
   paymentMethod: string,
   pickupTime: string
 ) {

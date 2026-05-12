@@ -1,11 +1,34 @@
 "use client"
 
 import { useState } from "react"
-import { updateOrderStatus } from "./actions"
+import { markOrderPaid, updateOrderStatus } from "./actions"
 import { Button } from "@/components/ui/button"
-import { Clock, CheckCircle2, XCircle, ArrowRight } from "lucide-react"
+import { Clock, CheckCircle2, ArrowRight, Banknote } from "lucide-react"
 
-export function OrdersClient({ initialOrders }: { initialOrders: any[] }) {
+type OrderItem = {
+  id: string
+  quantity: number
+  productNameSnapshot: string
+}
+
+type Order = {
+  id: string
+  orderNumber: string
+  status: string
+  paymentMethod: string
+  paymentStatus: string
+  total: number
+  createdAt: string
+  notes?: string | null
+  user?: {
+    name?: string | null
+    phone?: string | null
+    email?: string | null
+  } | null
+  items: OrderItem[]
+}
+
+export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
   const [orders, setOrders] = useState(initialOrders)
 
   const columns = [
@@ -15,9 +38,17 @@ export function OrdersClient({ initialOrders }: { initialOrders: any[] }) {
   ]
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
-    // Optimistic update
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o))
+    setOrders(prev => prev.map((o) => o.id === orderId ? {
+      ...o,
+      status: newStatus,
+      paymentStatus: newStatus === "COMPLETED" ? "PAID" : o.paymentStatus,
+    } : o))
     await updateOrderStatus(orderId, newStatus)
+  }
+
+  const handleMarkPaid = async (orderId: string) => {
+    setOrders(prev => prev.map((o) => o.id === orderId ? { ...o, paymentStatus: "PAID" } : o))
+    await markOrderPaid(orderId)
   }
 
   return (
@@ -39,6 +70,7 @@ export function OrdersClient({ initialOrders }: { initialOrders: any[] }) {
                     key={order.id} 
                     order={order} 
                     onStatusChange={handleStatusChange} 
+                    onMarkPaid={handleMarkPaid}
                   />
                 ))}
                 {colOrders.length === 0 && (
@@ -55,24 +87,45 @@ export function OrdersClient({ initialOrders }: { initialOrders: any[] }) {
   )
 }
 
-function OrderCard({ order, onStatusChange }: { order: any, onStatusChange: (id: string, status: string) => void }) {
-  const itemCount = order.items.reduce((acc: number, item: any) => acc + item.quantity, 0)
+function OrderCard({
+  order,
+  onStatusChange,
+  onMarkPaid,
+}: {
+  order: Order,
+  onStatusChange: (id: string, status: string) => void,
+  onMarkPaid: (id: string) => void,
+}) {
+  const itemCount = order.items.reduce((acc, item) => acc + item.quantity, 0)
+  const isCounterPending = order.paymentMethod === "Counter" && order.paymentStatus !== "PAID"
   
   return (
     <div className="bg-white p-4 rounded-xl shadow-sm border border-border/50">
       <div className="flex justify-between items-start mb-2">
         <div>
           <span className="font-bold text-sm">#{order.orderNumber}</span>
-          <p className="text-xs text-muted-foreground">{order.user.name}</p>
+          <p className="text-xs text-muted-foreground">{order.user?.name || "Customer"}</p>
+          <p className="text-[10px] text-muted-foreground">{order.user?.phone || order.user?.email || "No contact added"}</p>
         </div>
         <div className="flex items-center text-xs text-muted-foreground font-medium">
           <Clock className="w-3 h-3 mr-1" />
           {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </div>
       </div>
+
+      <div className="mb-2 flex flex-wrap gap-2">
+        <span className="rounded-full bg-secondary px-2 py-1 text-[10px] font-bold uppercase text-foreground">
+          {order.paymentMethod === "Counter" ? "Pay at counter" : "Online payment"}
+        </span>
+        <span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase ${
+          order.paymentStatus === "PAID" ? "bg-success/20 text-success-foreground" : "bg-warning/20 text-warning-foreground"
+        }`}>
+          {order.paymentStatus === "PAID" ? "Paid" : "Payment pending"}
+        </span>
+      </div>
       
       <div className="py-2 mb-2 border-y border-dashed space-y-1">
-        {order.items.map((item: any) => (
+        {order.items.map((item) => (
           <div key={item.id} className="flex justify-between text-xs">
             <span><span className="font-bold">{item.quantity}x</span> {item.productNameSnapshot}</span>
           </div>
@@ -84,6 +137,13 @@ function OrderCard({ order, onStatusChange }: { order: any, onStatusChange: (id:
         <span className="text-xs text-muted-foreground">{itemCount} items</span>
         <span className="font-mono font-bold text-primary">RM{order.total.toFixed(2)}</span>
       </div>
+
+      {isCounterPending && (
+        <Button size="sm" variant="outline" className="mb-2 w-full" onClick={() => onMarkPaid(order.id)}>
+          <Banknote className="mr-1 h-4 w-4" />
+          Mark Counter Payment Paid
+        </Button>
+      )}
 
       <div className="flex gap-2">
         {order.status === "NEW" && (

@@ -3,7 +3,22 @@ import { auth } from "@/lib/auth"
 import { getUserOrders } from "@/lib/supabase/orders"
 import { CustomerTopBar } from "@/components/layout/CustomerTopBar"
 import Link from "next/link"
-import { Coffee, ChevronRight } from "lucide-react"
+import { Coffee, ChevronRight, ReceiptText } from "lucide-react"
+
+type OrderItem = {
+  quantity: number
+}
+
+type Order = {
+  id: string
+  orderNumber: string
+  status: string
+  total: number
+  paymentMethod: string
+  paymentStatus: string
+  createdAt: string
+  items: OrderItem[]
+}
 
 export default async function OrdersPage() {
   const session = await auth()
@@ -45,8 +60,8 @@ export default async function OrdersPage() {
   )
 }
 
-function OrderCard({ order }: { order: any }) {
-  const itemCount = order.items.reduce((acc: number, item: any) => acc + item.quantity, 0)
+function OrderCard({ order }: { order: Order }) {
+  const itemCount = order.items.reduce((acc, item) => acc + item.quantity, 0)
   const isCompleted = order.status === "COMPLETED"
   const isCancelled = order.status === "CANCELLED"
   
@@ -71,12 +86,18 @@ function OrderCard({ order }: { order: any }) {
             <p className="text-xs text-muted-foreground">
               {itemCount} items • RM{order.total.toFixed(2)}
             </p>
+            <p className="text-[10px] font-medium text-muted-foreground">
+              {order.paymentMethod === "Counter" ? "Pay at counter" : "Online"} - {order.paymentStatus === "PAID" ? "Paid" : "Payment pending"}
+            </p>
             <p className="text-[10px] text-muted-foreground/60 mt-1">
               {new Date(order.createdAt).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
             </p>
           </div>
         </div>
-        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <ReceiptText className="h-4 w-4" />
+          <ChevronRight className="w-5 h-5" />
+        </div>
       </div>
     </Link>
   )

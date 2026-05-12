@@ -1,5 +1,6 @@
 import { supabase } from './client'
-import { addUserPoints, getUserById } from './users'
+import type { CartItem } from '@/lib/store'
+import { addUserPoints } from './users'
 import { getProductById } from './menu'
 
 // ─── Order Queries ────────────────────────────────────────────────────────
@@ -52,8 +53,8 @@ export async function getOrderById(orderId: string) {
 export async function getAllOrders() {
   const { data, error } = await supabase
     .from('Order')
-    .select('*, user:User(name, phone), items:OrderItem(*)')
-    .order('createdAt', { ascending: true })
+    .select('*, user:User(id, name, email, phone, avatarUrl), items:OrderItem(*)')
+    .order('createdAt', { ascending: false })
 
   if (error) console.error('[orders] getAllOrders:', error.message)
   return data || []
@@ -61,19 +62,36 @@ export async function getAllOrders() {
 
 /** Update an order's status */
 export async function updateOrderStatus(orderId: string, status: string) {
+  const updates: Record<string, string> = { status }
+
+  if (status === 'COMPLETED') {
+    updates.paymentStatus = 'PAID'
+  }
+
   const { error } = await supabase
     .from('Order')
-    .update({ status })
+    .update(updates)
     .eq('id', orderId)
 
   if (error) console.error('[orders] updateOrderStatus:', error.message)
   return !error
 }
 
+/** Mark a counter payment as paid */
+export async function markOrderPaid(orderId: string) {
+  const { error } = await supabase
+    .from('Order')
+    .update({ paymentStatus: 'PAID' })
+    .eq('id', orderId)
+
+  if (error) console.error('[orders] markOrderPaid:', error.message)
+  return !error
+}
+
 /** Create a new order from cart (server-side validated) */
 export async function createOrder(
   userId: string,
-  cartItems: any[],
+  cartItems: CartItem[],
   paymentMethod: string,
   pickupTime: string
 ) {

@@ -1,5 +1,9 @@
 import { supabase } from './client'
 
+type ProductRow = {
+  isAvailable: boolean
+}
+
 // ─── Menu & Product Queries ────────────────────────────────────────────────
 
 /** All categories with their available products, ordered by sortOrder */
@@ -13,7 +17,7 @@ export async function getMenuCategories() {
 
   return (data || []).map((cat) => ({
     ...cat,
-    products: (cat.products || []).filter((p: any) => p.isAvailable),
+    products: (cat.products || []).filter((p: ProductRow) => p.isAvailable),
   }))
 }
 
@@ -25,6 +29,17 @@ export async function getAddOns() {
     .eq('isAvailable', true)
 
   if (error) console.error('[menu] getAddOns:', error.message)
+  return data || []
+}
+
+/** All categories for admin forms */
+export async function getAllCategories() {
+  const { data, error } = await supabase
+    .from('Category')
+    .select('*')
+    .order('sortOrder', { ascending: true })
+
+  if (error) console.error('[menu] getAllCategories:', error.message)
   return data || []
 }
 
@@ -74,4 +89,57 @@ export async function setProductAvailability(id: string, isAvailable: boolean) {
 
   if (error) console.error('[menu] setProductAvailability:', error.message)
   return !error
+}
+
+export type ProductInput = {
+  name: string
+  description?: string | null
+  categoryId: string
+  imageUrl?: string | null
+  basePrice?: number | null
+  hotPrice?: number | null
+  icedPrice?: number | null
+  hasTemperatureOption: boolean
+  allowHot: boolean
+  allowIced: boolean
+  allowOatMilk: boolean
+  allowExtraShot: boolean
+  isAvailable: boolean
+  isPopular: boolean
+}
+
+/** Create product */
+export async function createProduct(input: ProductInput) {
+  const { data, error } = await supabase
+    .from('Product')
+    .insert(input)
+    .select('*, category:Category(*)')
+    .single()
+
+  if (error) throw new Error(error.message)
+  return data
+}
+
+/** Update product */
+export async function updateProduct(id: string, input: ProductInput) {
+  const { data, error } = await supabase
+    .from('Product')
+    .update(input)
+    .eq('id', id)
+    .select('*, category:Category(*)')
+    .single()
+
+  if (error) throw new Error(error.message)
+  return data
+}
+
+/** Delete product */
+export async function deleteProduct(id: string) {
+  const { error } = await supabase
+    .from('Product')
+    .delete()
+    .eq('id', id)
+
+  if (error) throw new Error(error.message)
+  return true
 }
