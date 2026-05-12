@@ -161,6 +161,14 @@ CREATE INDEX IF NOT EXISTS "idx_recipe_active_product" ON "Recipe" ("productId",
 
 INSERT INTO "InventorySetting" ("id") VALUES ('default') ON CONFLICT ("id") DO NOTHING;
 
+INSERT INTO "User" ("id", "name", "email", "passwordHash", "role", "points") VALUES
+('demo-customer-001', 'Demo Customer', 'customer@breywboy.demo', 'customer123', 'CUSTOMER', 0),
+('demo-admin-001', 'Demo Admin', 'admin@breywboy.demo', 'admin123', 'ADMIN', 0)
+ON CONFLICT ("email") DO UPDATE SET
+"name" = EXCLUDED."name",
+"passwordHash" = EXCLUDED."passwordHash",
+"role" = EXCLUDED."role";
+
 INSERT INTO "Promo" ("id", "code", "description", "discountType", "discountValue", "minOrderAmount", "maxUses", "currentUses", "isActive", "startsAt", "expiresAt") VALUES
 ('promo-welcome10', 'WELCOME10', '10% off for first Breywboy online orders.', 'PERCENTAGE', 10, 10, 200, 0, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '90 days'),
 ('promo-kopi5', 'KOPI5', 'RM5 off orders RM30 and above.', 'FIXED', 5, 30, 150, 0, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '60 days'),

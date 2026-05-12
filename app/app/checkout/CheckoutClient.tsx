@@ -16,6 +16,7 @@ export function CheckoutClient() {
   const [promoCode, setPromoCode] = useState("");
   const [promoData, setPromoData] = useState<{ id: string, code: string, discount: number } | null>(null);
   const [promoError, setPromoError] = useState("");
+  const [submitError, setSubmitError] = useState("");
   const [isValidating, setIsValidating] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -26,12 +27,15 @@ export function CheckoutClient() {
   }
 
   const handleCheckout = () => {
+    setSubmitError("");
     startTransition(async () => {
       try {
-        await createOrderAction(items, paymentMethod, pickupTime, fulfillmentType, promoData || undefined);
+        const result = await createOrderAction(items, paymentMethod, pickupTime, fulfillmentType, promoData || undefined);
         clearCart();
+        router.push(`/app/orders/${result.orderId}`);
       } catch (e) {
         console.error(e);
+        setSubmitError(e instanceof Error ? e.message : "Failed to submit order. Please try again.");
       }
     });
   };
@@ -231,6 +235,12 @@ export function CheckoutClient() {
           <span className="font-mono">RM{finalTotal.toFixed(2)}</span>
         </div>
       </section>
+
+      {submitError && (
+        <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-4 text-sm font-medium text-destructive">
+          {submitError}
+        </div>
+      )}
 
       {/* Sticky Confirm Button */}
       <div className="fixed bottom-28 left-4 right-4 z-40">

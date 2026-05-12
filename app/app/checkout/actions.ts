@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth"
 import type { CartItem } from "@/lib/store"
 import { createOrder } from "@/lib/supabase/orders"
 import { getPromoByCode, incrementPromoUsage } from "@/lib/supabase/promos"
-import { redirect } from "next/navigation"
+import { upsertUser } from "@/lib/supabase/users"
 
 export async function createOrderAction(
   cartItems: CartItem[],
@@ -15,6 +15,15 @@ export async function createOrderAction(
 ) {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")
+
+  await upsertUser({
+    id: session.user.id,
+    name: session.user.name || "Breywboy Customer",
+    email: session.user.email || `${session.user.id}@breywboy.local`,
+    passwordHash: "",
+    role: session.user.role || "CUSTOMER",
+    points: 0,
+  })
 
   const order = await createOrder(
     session.user.id,
@@ -29,7 +38,7 @@ export async function createOrderAction(
     await incrementPromoUsage(promoData.id)
   }
 
-  redirect(`/app/orders/${order.id}`)
+  return { orderId: order.id }
 }
 
 export async function validatePromoAction(code: string, subtotal: number) {

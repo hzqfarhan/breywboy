@@ -130,6 +130,11 @@ CREATE TABLE IF NOT EXISTS "RewardRedemption" (
 );
 
 -- 2. Insert Initial Data (Categories)
+INSERT INTO "User" ("id", "name", "email", "passwordHash", "role", "points") VALUES
+('demo-customer-001', 'Demo Customer', 'customer@breywboy.demo', 'customer123', 'CUSTOMER', 0),
+('demo-admin-001', 'Demo Admin', 'admin@breywboy.demo', 'admin123', 'ADMIN', 0);
+
+-- 3. Insert Initial Data (Categories)
 INSERT INTO "Category" ("id", "name", "slug", "sortOrder", "isActive") VALUES
 ('cat-coffee', 'Coffee', 'coffee', 1, true),
 ('cat-non-coffee', 'Non Coffee', 'non-coffee', 2, true),
@@ -138,12 +143,12 @@ INSERT INTO "Category" ("id", "name", "slug", "sortOrder", "isActive") VALUES
 ('cat-snacks', 'Snacks', 'snacks', 5, true),
 ('cat-addons', 'Add-ons / Extras', 'addons', 6, true);
 
--- 3. Insert Initial Data (Add-Ons)
+-- 4. Insert Initial Data (Add-Ons)
 INSERT INTO "AddOn" ("id", "name", "price", "isAvailable") VALUES
 ('addon-oat-milk', 'Oat Milk', 2.0, true),
 ('addon-extra-shot', 'Extra Shot', 2.0, true);
 
--- 4. Insert Initial Data (Products)
+-- 5. Insert Initial Data (Products)
 
 -- Coffee
 INSERT INTO "Product" ("id", "name", "description", "categoryId", "hotPrice", "icedPrice", "hasTemperatureOption", "allowHot", "allowIced", "allowOatMilk", "allowExtraShot", "isPopular", "imageUrl") VALUES
@@ -190,7 +195,7 @@ INSERT INTO "Product" ("id", "name", "description", "categoryId", "basePrice", "
 ('p-tempura', 'Chicken Tempura 8pcs', 'Chicken tempura, 8 pieces.', 'cat-snacks', 10, false, false, false, false, false, false),
 ('p-toast', 'Steamed Toast with Kaya Butter', 'Steamed toast served with kaya butter.', 'cat-snacks', 3, false, false, false, false, false, false);
 
--- 5. Insert Initial Data (Promos)
+-- 6. Insert Initial Data (Promos)
 INSERT INTO "Promo" ("id", "code", "description", "discountType", "discountValue", "minOrderAmount", "maxUses", "currentUses", "isActive", "startsAt", "expiresAt") VALUES
 ('promo-welcome10', 'WELCOME10', '10% off for first Breywboy online orders.', 'PERCENTAGE', 10, 10, 200, 0, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '90 days'),
 ('promo-kopi5', 'KOPI5', 'RM5 off orders RM30 and above.', 'FIXED', 5, 30, 150, 0, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '60 days'),
@@ -198,7 +203,7 @@ INSERT INTO "Promo" ("id", "code", "description", "discountType", "discountValue
 ('promo-pasta3', 'PASTA3', 'RM3 off pasta orders RM20 and above.', 'FIXED', 3, 20, 100, 0, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '45 days'),
 ('promo-student15', 'STUDENT15', '15% student promo for selected café orders.', 'PERCENTAGE', 15, 15, 100, 0, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '30 days');
 
--- 6. Insert Initial Data (Rewards)
+-- 7. Insert Initial Data (Rewards)
 INSERT INTO "Reward" ("id", "name", "description", "pointsRequired", "isActive") VALUES
 ('reward-rm3-voucher', 'RM3 Breywboy Voucher', 'Redeem RM3 off your next Breywboy order.', 30, true),
 ('reward-free-toast', 'Free Kaya Butter Toast', 'Redeem one steamed toast with kaya butter.', 45, true),

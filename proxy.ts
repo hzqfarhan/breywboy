@@ -8,6 +8,7 @@ export const proxy = auth((req) => {
 
   const isPublicRoute = ["/", "/login", "/menu"].includes(nextUrl.pathname)
   const isApiAuthRoute = nextUrl.pathname.startsWith("/api/auth")
+  const isReceiptRoute = /^\/app\/orders\/[^/]+\/receipt$/.test(nextUrl.pathname)
   const isAdmin = userRole === "ADMIN"
   const isCustomer = userRole === "CUSTOMER"
 
@@ -23,7 +24,7 @@ export const proxy = auth((req) => {
       return NextResponse.redirect(new URL(isCustomer ? "/app" : "/", nextUrl))
     }
 
-    if (nextUrl.pathname.startsWith("/app") && !isCustomer) {
+    if (nextUrl.pathname.startsWith("/app") && !isCustomer && !(isAdmin && isReceiptRoute)) {
       return NextResponse.redirect(new URL(isAdmin ? "/admin" : "/", nextUrl))
     }
 
