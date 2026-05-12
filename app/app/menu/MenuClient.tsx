@@ -57,7 +57,7 @@ export function MenuClient({ categories, addOns }: { categories: Category[], add
         </div>
         
         {/* Category Chips */}
-        <div className="flex overflow-x-auto px-4 gap-2 pb-2 scrollbar-hide snap-x">
+        <div className="flex overflow-x-auto px-6 gap-2 pb-2 scrollbar-hide snap-x">
           {categories.map((cat) => (
             <button
               key={cat.id}

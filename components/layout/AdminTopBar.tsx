@@ -26,7 +26,7 @@ export function AdminTopBar() {
         <button onClick={toggleAdminSidebar} className="md:hidden text-muted-foreground p-1 hover:bg-secondary rounded-md">
           <Menu className="w-6 h-6" />
         </button>
-        <img src="/assets/brey-this.png" alt="Breywboy" className="h-9 w-auto" />
+        <img src="/assets/brey-this.png" alt="Breywboy" className="h-9 w-auto md:hidden" />
         <h1 className="font-heading font-bold text-xl text-primary">{getTitle()}</h1>
       </div>
       
