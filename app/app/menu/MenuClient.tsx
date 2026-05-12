@@ -41,7 +41,7 @@ export function MenuClient({ categories, addOns }: { categories: Category[], add
   }
 
   return (
-    <div className="flex-1 flex flex-col relative pb-20">
+    <div className="flex-1 flex flex-col relative pb-48">
       <div className="sticky top-14 z-30 bg-background/95 backdrop-blur-md pt-4 pb-2 border-b">
         <div className="px-4 mb-4">
           <div className="relative">
@@ -130,7 +130,7 @@ export function MenuClient({ categories, addOns }: { categories: Category[], add
       )}
 
       {cartItemCount > 0 && (
-        <div className="fixed bottom-20 left-4 right-4 z-40">
+        <div className="fixed bottom-28 left-4 right-4 z-40">
           <Link href="/app/cart">
             <div className="bg-primary text-primary-foreground p-4 rounded-full shadow-2xl flex items-center justify-between animate-in slide-in-from-bottom-5">
               <div className="flex items-center gap-3">

@@ -33,7 +33,7 @@ export function CheckoutClient() {
   };
 
   return (
-    <div className="flex-1 p-4 pb-32 space-y-6">
+    <div className="flex-1 p-4 pb-48 space-y-6">
       
       {/* Order Type */}
       <section className="space-y-3">
@@ -168,10 +168,10 @@ export function CheckoutClient() {
       </section>
 
       {/* Sticky Confirm Button */}
-      <div className="fixed bottom-16 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t z-40">
+      <div className="fixed bottom-28 left-4 right-4 z-40">
         <Button 
           size="lg" 
-          className="w-full h-14 rounded-full text-lg flex justify-between px-6 bg-primary text-primary-foreground hover:bg-primary/90"
+          className="w-full h-14 rounded-full text-lg flex justify-between px-6 bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xl shadow-black/20 animate-in slide-in-from-bottom-5"
           disabled={isPending}
           onClick={handleCheckout}
         >
