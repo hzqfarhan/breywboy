@@ -27,7 +27,7 @@ export default async function CustomerDashboard() {
         <div className="mb-2">
           <p className="text-muted-foreground text-sm font-medium uppercase tracking-wider">Welcome back,</p>
           <h2 className="text-3xl font-heading font-bold text-primary">
-            {user?.name?.split(' ')[0] || 'Breywboss'}!
+            {user?.name?.split(' ')[0] || 'Yunn'}!
           </h2>
         </div>
 
