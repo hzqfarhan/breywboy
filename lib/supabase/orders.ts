@@ -53,13 +53,43 @@ export async function getOrderById(orderId: string) {
 
 /** Get all orders for admin */
 export async function getAllOrders() {
+  const baseSelect = '*, user:User(id, name, email, phone, avatarUrl), items:OrderItem(*)'
+  const selectWithCosts = `${baseSelect}, orderCost:OrderCost(*), itemCosts:OrderItemCost(*)`
+
   const { data, error } = await supabase
     .from('Order')
-    .select('*, user:User(id, name, email, phone, avatarUrl), items:OrderItem(*), orderCost:OrderCost(*), itemCosts:OrderItemCost(*)')
+    .select(selectWithCosts)
     .order('createdAt', { ascending: false })
 
-  if (error) console.error('[orders] getAllOrders:', error.message)
-  return data || []
+  if (!error) return data || []
+
+  const shouldRetryWithoutCosts =
+    error.code === 'PGRST200' ||
+    error.code === 'PGRST205' ||
+    /OrderCost|OrderItemCost|relationship|schema cache/i.test(error.message)
+
+  if (!shouldRetryWithoutCosts) {
+    console.error('[orders] getAllOrders:', error.message)
+    return []
+  }
+
+  console.warn('[orders] getAllOrders: cost tables unavailable, loading orders without cost data:', error.message)
+
+  const { data: fallbackData, error: fallbackError } = await supabase
+    .from('Order')
+    .select(baseSelect)
+    .order('createdAt', { ascending: false })
+
+  if (fallbackError) {
+    console.error('[orders] getAllOrders fallback:', fallbackError.message)
+    return []
+  }
+
+  return (fallbackData || []).map((order) => ({
+    ...order,
+    orderCost: [],
+    itemCosts: [],
+  }))
 }
 
 /** Update an order's status */

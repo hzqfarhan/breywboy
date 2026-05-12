@@ -1,6 +1,7 @@
 "use server"
 
 import { auth } from "@/lib/auth"
+import { revalidatePath } from "next/cache"
 import type { CartItem } from "@/lib/store"
 import { createOrder } from "@/lib/supabase/orders"
 import { getPromoByCode, incrementPromoUsage } from "@/lib/supabase/promos"
@@ -37,6 +38,11 @@ export async function createOrderAction(
   if (promoData?.id) {
     await incrementPromoUsage(promoData.id)
   }
+
+  revalidatePath("/app")
+  revalidatePath("/app/orders")
+  revalidatePath("/admin")
+  revalidatePath("/admin/orders")
 
   return { orderId: order.id }
 }

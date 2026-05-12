@@ -18,9 +18,10 @@ type OrderItem = {
   customizations: string | null
 }
 
-export default async function ReceiptPage({ params }: { params: { id: string } }) {
+export default async function ReceiptPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await auth()
-  const order = await getOrderById(params.id)
+  const order = await getOrderById(id)
 
   const isAdmin = session?.user?.role === "ADMIN"
   const isOwner = order?.userId === session?.user?.id
@@ -97,11 +98,11 @@ export default async function ReceiptPage({ params }: { params: { id: string } }
 
         <div className="mx-auto mt-4 max-w-md">
           <Link
-            href={`/app/orders/${order.id}`}
+            href={isAdmin ? "/admin/orders" : `/app/orders/${order.id}`}
             className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full rounded-full")}
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Order Status
+            {isAdmin ? "Back to Admin Orders" : "Back to Order Status"}
           </Link>
         </div>
       </main>

@@ -16,9 +16,10 @@ type OrderItem = {
   customizations: string | null
 }
 
-export default async function OrderDetailPage({ params }: { params: { id: string } }) {
+export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await auth()
-  const order = await getOrderById(params.id)
+  const order = await getOrderById(id)
 
   if (!order || order.userId !== session?.user?.id) {
     notFound()
