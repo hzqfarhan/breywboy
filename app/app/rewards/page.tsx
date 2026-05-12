@@ -108,6 +108,8 @@ export default async function RewardsPage() {
               )
             })}
           </div>
+        </section>
+
         {/* Redemption History */}
         {history.length > 0 && (
           <section className="space-y-4">
