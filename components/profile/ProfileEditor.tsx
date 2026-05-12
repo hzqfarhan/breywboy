@@ -1,12 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { User as UserIcon, Mail, Phone, Settings, Heart, ChevronRight } from "lucide-react"
+import { User as UserIcon, Mail, Phone, Settings, Heart, ChevronRight, Info } from "lucide-react"
 import { updateProfileDetails } from "@/app/app/profile/actions"
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
+import Link from "next/link"
 
 export function ProfileEditor({ user }: { user: any }) {
   const [editingField, setEditingField] = useState<'name' | 'phone' | 'favouriteDrink' | null>(null)
@@ -50,6 +51,9 @@ export function ProfileEditor({ user }: { user: any }) {
         <ProfileRow icon={<Mail />} label="Email Address" value="yunn@seladevs.my" onClick={() => handleRowClick('email')} />
         <ProfileRow icon={<Phone />} label="Phone Number" value={user?.phone || 'Not provided'} onClick={() => handleRowClick('phone')} hasArrow />
         <ProfileRow icon={<Heart className="text-destructive" />} label="Favourite Drink" value={user?.favouriteDrink || 'Not set'} onClick={() => handleRowClick('favouriteDrink')} hasArrow />
+        <Link href="/app/profile/about" className="block">
+          <ProfileRow icon={<Info />} label="About Breywboy" hasArrow />
+        </Link>
         <ProfileRow icon={<Settings />} label="Settings" hasArrow onClick={() => toast.info("Settings coming soon")} />
       </div>
 
