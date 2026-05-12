@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
 import { markOrderPaid, updateOrderStatus } from "./actions"
 import { Button } from "@/components/ui/button"
 import { Clock, CheckCircle2, ArrowRight, Banknote, ReceiptText } from "lucide-react"
@@ -30,7 +31,23 @@ type Order = {
 }
 
 export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
+  const router = useRouter()
+  const [, startTransition] = useTransition()
   const [orders, setOrders] = useState(initialOrders)
+
+  useEffect(() => {
+    setOrders(initialOrders)
+  }, [initialOrders])
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      startTransition(() => {
+        router.refresh()
+      })
+    }, 1000)
+
+    return () => window.clearInterval(interval)
+  }, [router, startTransition])
 
   const columns = [
     { id: "NEW", title: "New Orders", color: "bg-blue-50 border-blue-200", titleColor: "text-blue-700" },
