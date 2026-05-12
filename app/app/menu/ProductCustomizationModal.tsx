@@ -70,6 +70,7 @@ export function ProductCustomizationModal({ product, addOns, onClose }: Props) {
       name: product.name,
       unitPrice: getUnitPrice(),
       quantity,
+      imageUrl: product.imageUrl,
       customizations: { 
         temperature,
         addOns: selectedAddOns,
@@ -79,16 +80,25 @@ export function ProductCustomizationModal({ product, addOns, onClose }: Props) {
     onClose();
   };
 
+  const isCoffee = product.categoryId === 'cat-coffee';
+  const isNonCoffee = product.categoryId === 'cat-non-coffee';
+  const isMatcha = product.categoryId === 'cat-matcha';
+  const isDrink = isCoffee || isNonCoffee || isMatcha;
+
   return (
     <Drawer open={true} onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent className="max-h-[90vh] bg-background">
+      <DrawerContent className="max-h-[96vh] bg-background">
         <div className="mx-auto w-full max-w-md flex flex-col h-full overflow-hidden">
           <DrawerHeader className="relative border-b pb-4 shrink-0">
             <button onClick={onClose} className="absolute right-4 top-4 bg-secondary p-1.5 rounded-full text-muted-foreground z-10">
               <X className="w-5 h-5" />
             </button>
             <div className="w-full aspect-video bg-secondary rounded-2xl mb-4 flex items-center justify-center relative overflow-hidden">
-               <Coffee className="w-16 h-16 text-primary/20" />
+               {product.imageUrl ? (
+                 <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+               ) : (
+                 <Coffee className="w-16 h-16 text-primary/20" />
+               )}
             </div>
             <DrawerTitle className="text-2xl font-heading text-primary uppercase tracking-wide text-left">{product.name}</DrawerTitle>
             {product.description && (
@@ -120,10 +130,14 @@ export function ProductCustomizationModal({ product, addOns, onClose }: Props) {
             )}
 
             {/* Add-ons */}
-            {(product.allowOatMilk || product.allowExtraShot) && (
+            {isDrink && (
               <Section title="Add-ons">
                 <div className="grid grid-cols-1 gap-3">
-                  {addOns.filter(a => (product.allowOatMilk && a.name === 'Oat Milk') || (product.allowExtraShot && a.name === 'Extra Shot')).map(addon => {
+                  {addOns.filter(a => {
+                    if (a.name === 'Oat Milk' && isDrink) return true;
+                    if (a.name === 'Extra Shot' && isCoffee) return true;
+                    return false;
+                  }).map(addon => {
                     const isActive = !!selectedAddOns.find(a => a.id === addon.id);
                     return (
                       <div key={addon.id} className="flex items-center justify-between bg-white border border-border rounded-xl p-3">

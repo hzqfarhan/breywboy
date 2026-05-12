@@ -33,10 +33,10 @@ export function MenuClient({ categories, addOns }: { categories: Category[], add
   const getPriceDisplay = (p: Product) => {
     if (!p.hasTemperatureOption && p.basePrice !== null) return `RM${p.basePrice.toFixed(2)}`;
     if (p.hasTemperatureOption) {
-      if (p.icedPrice !== null) return `RM${p.icedPrice.toFixed(2)}`;
-      if (p.hotPrice !== null) return `RM${p.hotPrice.toFixed(2)}`;
+      if (p.allowIced && p.icedPrice !== null) return `RM${p.icedPrice.toFixed(2)}`;
+      if (p.allowHot && p.hotPrice !== null) return `RM${p.hotPrice.toFixed(2)}`;
     }
-    return "";
+    return p.basePrice ? `RM${p.basePrice.toFixed(2)}` : "";
   }
 
   return (
@@ -87,7 +87,11 @@ export function MenuClient({ categories, addOns }: { categories: Category[], add
                   className="bg-white rounded-2xl p-4 border border-border hover:border-primary/50 transition-colors text-left flex gap-4 items-center"
                 >
                   <div className="w-20 h-20 bg-secondary rounded-xl flex items-center justify-center relative overflow-hidden shrink-0">
-                    <Coffee className="w-8 h-8 text-primary/20" />
+                    {product.imageUrl ? (
+                      <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Coffee className="w-8 h-8 text-primary/20" />
+                    )}
                     {product.isPopular && (
                       <span className="absolute bottom-0 left-0 right-0 bg-primary text-primary-foreground text-[8px] font-bold py-0.5 text-center uppercase tracking-wider">
                         Popular

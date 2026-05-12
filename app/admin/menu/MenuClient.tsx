@@ -42,11 +42,11 @@ export function MenuClient({ initialProducts }: { initialProducts: any[] }) {
               <TableCell className="font-mono">
                 {product.hasTemperatureOption ? (
                   <div className="text-xs">
-                    {product.allowHot && `Hot: RM${product.hotPrice?.toFixed(2)} `}
-                    {product.allowIced && `Iced: RM${product.icedPrice?.toFixed(2)}`}
+                    {product.allowHot && product.hotPrice !== null && `Hot: RM${product.hotPrice.toFixed(2)} `}
+                    {product.allowIced && product.icedPrice !== null && `Iced: RM${product.icedPrice.toFixed(2)}`}
                   </div>
                 ) : (
-                  `RM${product.basePrice?.toFixed(2)}`
+                  `RM${(product.basePrice || 0).toFixed(2)}`
                 )}
               </TableCell>
               <TableCell>

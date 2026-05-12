@@ -33,9 +33,8 @@ export function CustomerTopBar({ title, showBack = false }: Props) {
             <ChevronLeft className="w-5 h-5" />
           </Button>
         )}
-        {pathname === "/app" && !title ? (
-          <img src="/assets/brey-this.png" alt="Breywboy" className="h-9 w-auto" />
-        ) : (
+        <img src="/assets/brey-this.png" alt="Breywboy" className="h-9 w-auto" />
+        {getTitle() && pathname !== "/app" && (
           <h1 className="font-heading font-semibold text-lg text-primary tracking-tight truncate">
             {getTitle()}
           </h1>

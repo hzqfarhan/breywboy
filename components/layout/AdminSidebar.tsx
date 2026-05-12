@@ -22,12 +22,10 @@ export function AdminSidebar() {
   return (
     <aside className="w-64 bg-sidebar border-r hidden md:flex flex-col h-full z-10 relative">
       <div className="h-16 flex items-center px-6 border-b">
-        <div className="flex items-center gap-2">
-          <div className="bg-sidebar-primary text-sidebar-primary-foreground p-1.5 rounded-md">
-            <Coffee className="w-5 h-5" />
-          </div>
-          <span className="font-heading font-bold text-xl tracking-tight text-sidebar-primary">Breywboy Admin</span>
-        </div>
+        <Link href="/admin" className="flex items-center gap-2">
+          <img src="/assets/brey-this.png" alt="Breywboy" className="h-9 w-auto" />
+          <span className="font-heading font-bold text-xl tracking-tight text-sidebar-primary">Admin</span>
+        </Link>
       </div>
       
       <div className="flex-1 overflow-y-auto py-4">

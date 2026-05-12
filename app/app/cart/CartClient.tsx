@@ -42,8 +42,7 @@ export function CartClient() {
       {/* Items List */}
       <div className="space-y-4">
         {items.map((item) => {
-          let itemPrice = item.unitPrice;
-          item.customizations.addOns.forEach(a => itemPrice += a.price);
+          const itemPrice = item.unitPrice;
 
           const customsText = [
             item.customizations.temperature,
@@ -52,8 +51,12 @@ export function CartClient() {
 
           return (
             <div key={item.cartItemId} className="bg-white p-4 rounded-2xl border border-border flex gap-4">
-              <div className="w-16 h-16 bg-secondary rounded-xl flex items-center justify-center shrink-0">
-                <Coffee className="w-8 h-8 text-primary/20" />
+              <div className="w-16 h-16 bg-secondary rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
+                {item.imageUrl ? (
+                  <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                ) : (
+                  <Coffee className="w-8 h-8 text-primary/20" />
+                )}
               </div>
               
               <div className="flex-1">

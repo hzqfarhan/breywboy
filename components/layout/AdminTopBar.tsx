@@ -24,6 +24,7 @@ export function AdminTopBar() {
         <button className="md:hidden text-muted-foreground">
           <Menu className="w-6 h-6" />
         </button>
+        <img src="/assets/brey-this.png" alt="Breywboy" className="h-9 w-auto" />
         <h1 className="font-heading font-bold text-xl text-primary">{getTitle()}</h1>
       </div>
       

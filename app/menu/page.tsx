@@ -40,11 +40,38 @@ export default async function PublicMenuPage() {
           {categories.filter(c => c.products.length > 0).map(cat => (
             <section key={cat.id}>
               <h2 className="text-3xl font-heading font-bold text-primary border-b border-border pb-4 mb-8 uppercase tracking-wide">{cat.name}</h2>
+              
+              {cat.id === 'cat-coffee' && (
+                <div className="bg-primary/5 border border-primary/10 rounded-2xl p-6 mb-8 flex flex-col md:flex-row gap-6 items-center">
+                  <div className="bg-primary text-primary-foreground p-4 rounded-xl">
+                    <Coffee className="w-8 h-8" />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 flex-1 text-center sm:text-left">
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-primary/60 tracking-widest mb-1">Beans</p>
+                      <p className="font-bold text-sm">Brazil Cerrado</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-primary/60 tracking-widest mb-1">Varietal</p>
+                      <p className="font-bold text-sm">Mundo Novo</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-primary/60 tracking-widest mb-1">Process</p>
+                      <p className="font-bold text-sm">Natural</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {cat.products.map((product: any) => (
                   <div key={product.id} className="bg-white p-5 rounded-2xl border border-border flex gap-5 hover:border-primary/50 transition-colors">
-                    <div className="w-20 h-20 bg-secondary rounded-xl flex items-center justify-center shrink-0">
-                      <Coffee className="w-10 h-10 text-primary/20" />
+                    <div className="w-20 h-20 bg-secondary rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
+                      {product.imageUrl ? (
+                        <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <Coffee className="w-10 h-10 text-primary/20" />
+                      )}
                     </div>
                     <div className="flex-1 flex flex-col justify-center">
                       <div className="flex justify-between items-start mb-1">
@@ -56,7 +83,7 @@ export default async function PublicMenuPage() {
                       <div className="flex items-center justify-between mt-auto">
                         <span className="font-mono font-bold text-sm text-primary">
                           {product.hasTemperatureOption ? (
-                            `RM${(product.icedPrice || product.hotPrice || 0).toFixed(2)}`
+                            product.allowIced ? `RM${(product.icedPrice || 0).toFixed(2)}` : `RM${(product.hotPrice || 0).toFixed(2)}`
                           ) : (
                             `RM${(product.basePrice || 0).toFixed(2)}`
                           )}
