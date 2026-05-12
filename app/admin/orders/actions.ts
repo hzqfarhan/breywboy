@@ -2,6 +2,7 @@
 
 import { auth } from "@/lib/auth"
 import { supabase } from "@/lib/supabase"
+import { consumeInventoryForOrder } from "@/lib/supabase/fifo"
 import { revalidatePath } from "next/cache"
 
 export async function updateOrderStatus(orderId: string, newStatus: string) {
@@ -16,7 +17,14 @@ export async function updateOrderStatus(orderId: string, newStatus: string) {
     .update(updates)
     .eq('id', orderId)
 
+  if (newStatus === "PREPARING") {
+    await consumeInventoryForOrder(orderId)
+  }
+
   revalidatePath("/admin/orders")
+  revalidatePath("/admin")
+  revalidatePath("/admin/inventory")
+  revalidatePath("/admin/profit")
   revalidatePath("/app/orders")
 }
 

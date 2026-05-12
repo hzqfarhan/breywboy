@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, ShoppingBag, Coffee, ListTree, Tags, Gift, Users, Settings, X, Eye, MonitorCog } from "lucide-react"
+import { LayoutDashboard, ShoppingBag, Coffee, ListTree, Tags, Gift, Users, Settings, X, Eye, MonitorCog, Boxes, ClipboardList, PackageSearch, Receipt, FlaskConical, SlidersHorizontal, ChartNoAxesColumnIncreasing, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useUIStore } from "@/lib/store"
 
@@ -17,6 +17,28 @@ const routes = [
   { href: "/admin/rewards", label: "Rewards", icon: Gift },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/settings", label: "Settings", icon: Settings },
+]
+
+const routeGroups = [
+  {
+    title: "Inventory",
+    routes: [
+      { href: "/admin/inventory", label: "Overview", icon: Boxes },
+      { href: "/admin/inventory/materials", label: "Raw Materials", icon: PackageSearch },
+      { href: "/admin/inventory/batches", label: "Stock Batches", icon: ClipboardList },
+      { href: "/admin/inventory/purchases", label: "Purchases", icon: Receipt },
+      { href: "/admin/inventory/recipes", label: "Recipes", icon: FlaskConical },
+      { href: "/admin/inventory/adjustments", label: "Stock Adjustments", icon: SlidersHorizontal },
+    ],
+  },
+  {
+    title: "Profit",
+    routes: [
+      { href: "/admin/profit/products", label: "Product Margins", icon: ChartNoAxesColumnIncreasing },
+      { href: "/admin/profit/orders", label: "Order Profit", icon: Receipt },
+      { href: "/admin/profit/reports", label: "Reports", icon: FileText },
+    ],
+  },
 ]
 
 export function AdminSidebar() {
@@ -67,6 +89,31 @@ export function AdminSidebar() {
               </Link>
             )
           })}
+          {routeGroups.map((group) => (
+            <div key={group.title} className="pt-4">
+              <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">{group.title}</p>
+              <div className="space-y-1">
+                {group.routes.map((route) => {
+                  const isActive = pathname === route.href || (route.href !== "/admin" && pathname.startsWith(route.href))
+                  return (
+                    <Link
+                      key={route.href}
+                      href={route.href}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm",
+                        isActive
+                          ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      )}
+                    >
+                      <route.icon className="w-5 h-5" />
+                      {route.label}
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
       </div>
     </aside>

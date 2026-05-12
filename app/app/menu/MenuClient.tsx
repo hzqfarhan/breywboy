@@ -13,7 +13,8 @@ type Product = {
   basePrice: number | null, hotPrice: number | null, icedPrice: number | null,
   hasTemperatureOption: boolean, allowHot: boolean, allowIced: boolean,
   allowOatMilk: boolean, allowExtraShot: boolean,
-  imageUrl?: string | null
+  imageUrl?: string | null,
+  inventoryAvailable?: boolean
 };
 type Category = { id: string, name: string, products: Product[] };
 type AddOn = { id: string, name: string, price: number };
@@ -84,8 +85,12 @@ export function MenuClient({ categories, addOns }: { categories: Category[], add
               {cat.products.map((product) => (
                 <button
                   key={product.id}
-                  onClick={() => setSelectedProduct(product)}
-                  className="bg-white rounded-2xl p-4 border border-border hover:border-primary/50 transition-colors text-left flex gap-4 items-center"
+                  onClick={() => product.inventoryAvailable !== false && setSelectedProduct(product)}
+                  disabled={product.inventoryAvailable === false}
+                  className={cn(
+                    "bg-white rounded-2xl p-4 border border-border hover:border-primary/50 transition-colors text-left flex gap-4 items-center",
+                    product.inventoryAvailable === false && "opacity-50 cursor-not-allowed"
+                  )}
                 >
                   <div className="w-20 h-20 bg-secondary rounded-xl flex items-center justify-center relative overflow-hidden shrink-0">
                     {product.imageUrl ? (
@@ -98,11 +103,18 @@ export function MenuClient({ categories, addOns }: { categories: Category[], add
                         Popular
                       </span>
                     )}
+                    {product.inventoryAvailable === false && (
+                      <span className="absolute inset-x-0 top-0 bg-primary text-primary-foreground text-[8px] font-bold py-0.5 text-center uppercase tracking-wider">
+                        Sold out
+                      </span>
+                    )}
                   </div>
                   <div className="flex-1 flex flex-col justify-center">
                     <h3 className="font-bold text-base leading-tight mb-1 text-foreground">{product.name}</h3>
                     {product.description && <p className="text-xs text-muted-foreground line-clamp-1 mb-2">{product.description}</p>}
-                    <span className="font-mono font-bold text-sm text-primary">{getPriceDisplay(product)}</span>
+                    <span className="font-mono font-bold text-sm text-primary">
+                      {product.inventoryAvailable === false ? "Currently unavailable" : getPriceDisplay(product)}
+                    </span>
                   </div>
                   <div className="bg-primary text-primary-foreground w-8 h-8 rounded-full flex items-center justify-center shrink-0">
                     <span className="text-lg leading-none mb-0.5">+</span>

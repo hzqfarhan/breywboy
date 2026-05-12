@@ -6,8 +6,24 @@ export default function AdminSettingsPage() {
   return (
     <div className="space-y-6">
       <div className="p-6 bg-white rounded-2xl border shadow-sm">
-        <h2 className="text-xl font-bold font-heading mb-2">Module Coming Soon</h2>
-        <p className="text-muted-foreground">This admin module is under construction.</p>
+        <h2 className="text-xl font-bold font-heading mb-4">Inventory Settings</h2>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          {[
+            ["Enable inventory tracking", "On"],
+            ["Enable FIFO costing", "On"],
+            ["Allow negative stock", "Off"],
+            ["Low stock alerts", "On"],
+            ["Expiry alert days", "7"],
+            ["Default waste percentage", "0%"],
+            ["Auto deduct stock when", "Order accepted"],
+          ].map(([label, value]) => (
+            <div key={label} className="flex items-center justify-between rounded-lg border p-3">
+              <span className="text-sm font-medium">{label}</span>
+              <span className="font-mono text-sm font-bold">{value}</span>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">Edit these defaults in Supabase table InventorySetting for now.</p>
       </div>
 
       <div className="p-6 bg-white rounded-2xl border shadow-sm">

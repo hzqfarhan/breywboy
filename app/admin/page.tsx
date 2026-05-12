@@ -2,6 +2,10 @@ export const dynamic = "force-dynamic";
 import { getAllOrders } from "@/lib/supabase/orders"
 import { DollarSign, ShoppingBag, Coffee, CheckCircle2 } from "lucide-react"
 import { RevenueLineChart } from "./RevenueLineChart"
+import { MetricCard } from "@/components/admin/MetricCard"
+import { getProfitDashboard } from "@/lib/supabase/costing"
+import { getInventoryOverview } from "@/lib/supabase/inventory"
+import { SimpleBarChart } from "./profit/ProfitCharts"
 
 type RevenuePoint = {
   label: string
@@ -12,6 +16,7 @@ type RevenuePoint = {
 
 export default async function AdminDashboard() {
   const orders = await getAllOrders()
+  const [profit, inventory] = await Promise.all([getProfitDashboard(), getInventoryOverview()])
   const chartData = getLastSevenDaysRevenue(orders)
   
   const totalRevenue = orders.reduce((acc, order) => acc + order.total, 0)
@@ -28,6 +33,43 @@ export default async function AdminDashboard() {
         <StatCard title="Ready Orders" value={readyCount} icon={<Coffee />} trend="Waiting for pickup" />
         <StatCard title="Completed" value={completedCount} icon={<CheckCircle2 />} trend="+18.2%" />
       </div>
+
+      <section className="space-y-4">
+        <div>
+          <h3 className="font-heading text-xl font-bold">Inventory & Profit</h3>
+          <p className="text-sm text-muted-foreground">FIFO costing, stock alerts, and margin health.</p>
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+          <MetricCard title="Today's Revenue" value={`RM${profit.revenue.toFixed(2)}`} />
+          <MetricCard title="Today's COGS" value={`RM${profit.cogs.toFixed(2)}`} />
+          <MetricCard title="Today's Gross Profit" value={`RM${profit.grossProfit.toFixed(2)}`} />
+          <MetricCard title="Gross Margin %" value={`${profit.grossMargin.toFixed(1)}%`} />
+          <MetricCard title="Low Stock Items" value={inventory.lowStock.length} />
+          <MetricCard title="Expiring Soon" value={inventory.expiringSoon.length} />
+          <MetricCard title="Inventory Value" value={`RM${inventory.inventoryValue.toFixed(2)}`} />
+          <MetricCard title="Top Profitable Product" value={profit.topProfitableProduct} />
+          <MetricCard title="Lowest Margin Product" value={profit.lowestMarginProduct} />
+          <MetricCard title="Most Used Ingredient Today" value={profit.mostUsedIngredientToday} />
+        </div>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          <div className="rounded-lg border bg-white p-5">
+            <h4 className="mb-4 font-heading font-bold">Revenue vs COGS vs Gross Profit</h4>
+            <SimpleBarChart
+              xKey="label"
+              data={[{ label: "Today", revenue: profit.revenue, cogs: profit.cogs, grossProfit: profit.grossProfit }]}
+              bars={[
+                { key: "revenue", name: "Revenue", color: "#111" },
+                { key: "cogs", name: "COGS", color: "#777" },
+                { key: "grossProfit", name: "Gross Profit", color: "#bbb" },
+              ]}
+            />
+          </div>
+          <div className="rounded-lg border bg-white p-5">
+            <h4 className="mb-4 font-heading font-bold">Product Profit Ranking</h4>
+            <SimpleBarChart xKey="name" data={profit.productRanking.slice(0, 6)} bars={[{ key: "profit", name: "Profit", color: "#111" }]} />
+          </div>
+        </div>
+      </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Charts placeholder */}

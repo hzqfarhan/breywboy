@@ -2,6 +2,8 @@ import { supabase } from './client'
 import type { CartItem } from '@/lib/store'
 import { addUserPoints } from './users'
 import { getProductById } from './menu'
+import { consumeInventoryForOrder } from './fifo'
+import { getUnavailableProductIds } from './inventory'
 
 // ─── Order Queries ────────────────────────────────────────────────────────
 
@@ -53,7 +55,7 @@ export async function getOrderById(orderId: string) {
 export async function getAllOrders() {
   const { data, error } = await supabase
     .from('Order')
-    .select('*, user:User(id, name, email, phone, avatarUrl), items:OrderItem(*)')
+    .select('*, user:User(id, name, email, phone, avatarUrl), items:OrderItem(*), orderCost:OrderCost(*), itemCosts:OrderItemCost(*)')
     .order('createdAt', { ascending: false })
 
   if (error) console.error('[orders] getAllOrders:', error.message)
@@ -74,6 +76,9 @@ export async function updateOrderStatus(orderId: string, status: string) {
     .eq('id', orderId)
 
   if (error) console.error('[orders] updateOrderStatus:', error.message)
+  if (!error && status === 'PREPARING') {
+    await consumeInventoryForOrder(orderId)
+  }
   return !error
 }
 
@@ -97,12 +102,14 @@ export async function createOrder(
   fulfillmentType = 'PICKUP',
   promoData?: { id: string, code: string, discount: number }
 ) {
+  const unavailableProductIds = new Set(await getUnavailableProductIds())
   let subtotal = 0
   const orderItemsData = []
 
   for (const item of cartItems) {
     const product = await getProductById(item.productId)
     if (!product) throw new Error(`Product not found: ${item.productId}`)
+    if (unavailableProductIds.has(item.productId)) throw new Error(`${product.name} is currently unavailable.`)
 
     let unitPrice = product.basePrice || 0
 
@@ -188,12 +195,14 @@ export async function createWalkInOrder(
   customerName?: string,
   notes?: string
 ) {
+  const unavailableProductIds = new Set(await getUnavailableProductIds())
   let subtotal = 0
   const orderItemsData = []
 
   for (const item of cartItems) {
     const product = await getProductById(item.productId)
     if (!product) throw new Error(`Product not found: ${item.productId}`)
+    if (unavailableProductIds.has(item.productId)) throw new Error(`${product.name} is currently unavailable.`)
 
     let unitPrice = product.basePrice || 0
 

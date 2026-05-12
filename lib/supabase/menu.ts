@@ -1,4 +1,5 @@
 import { supabase } from './client'
+import { getUnavailableProductIds } from './inventory'
 
 type ProductRow = {
   isAvailable: boolean
@@ -8,6 +9,7 @@ type ProductRow = {
 
 /** All categories with their available products, ordered by sortOrder */
 export async function getMenuCategories() {
+  const unavailableProductIds = new Set(await getUnavailableProductIds())
   const { data, error } = await supabase
     .from('Category')
     .select(`*, products:Product(*)`)
@@ -17,7 +19,12 @@ export async function getMenuCategories() {
 
   return (data || []).map((cat) => ({
     ...cat,
-    products: (cat.products || []).filter((p: ProductRow) => p.isAvailable),
+    products: (cat.products || [])
+      .filter((p: ProductRow) => p.isAvailable)
+      .map((product: ProductRow & { id: string }) => ({
+        ...product,
+        inventoryAvailable: !unavailableProductIds.has(product.id),
+      })),
   }))
 }
 
