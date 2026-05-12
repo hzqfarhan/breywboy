@@ -154,7 +154,6 @@ export async function createOrder(
       userId,
       orderNumber,
       subtotal,
-      total: subtotal,
       paymentMethod,
       paymentStatus: paymentMethod === 'Online' ? 'PENDING' : 'PENDING',
       pickupTime: pickupDate,
