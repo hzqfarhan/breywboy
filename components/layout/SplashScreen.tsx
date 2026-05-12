@@ -25,7 +25,7 @@ export function SplashScreen({ destination }: { destination: string }) {
   }, [destination, router])
 
   return (
-    <div className="fixed inset-0 bg-black flex items-center justify-center z-[100] transition-opacity duration-700 ease-in-out" style={{ opacity: isFadingOut ? 0 : 1 }}>
+    <div className="fixed inset-0 bg-white flex items-center justify-center z-[100] transition-opacity duration-700 ease-in-out" style={{ opacity: isFadingOut ? 0 : 1 }}>
       <img 
         src="/assets/breywboy.gif" 
         alt="Breywboy" 
