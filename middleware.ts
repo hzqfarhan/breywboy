@@ -18,10 +18,13 @@ export default auth((req) => {
     }
 
     // Role-based access control
-    if (nextUrl.pathname.startsWith("/admin") && userRole !== "ADMIN") {
+    const isAdmin = userRole?.toString().toUpperCase() === "ADMIN"
+    const isCustomer = userRole?.toString().toUpperCase() === "CUSTOMER"
+
+    if (nextUrl.pathname.startsWith("/admin") && !isAdmin) {
       return NextResponse.redirect(new URL("/app", nextUrl))
     }
-    if (nextUrl.pathname.startsWith("/app") && userRole !== "CUSTOMER") {
+    if (nextUrl.pathname.startsWith("/app") && !isCustomer) {
       return NextResponse.redirect(new URL("/admin", nextUrl))
     }
 
