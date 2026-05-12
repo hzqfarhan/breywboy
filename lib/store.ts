@@ -58,3 +58,16 @@ export const useCartStore = create<CartState>()(
     }
   )
 )
+
+interface UIState {
+  isAdminSidebarOpen: boolean
+  toggleAdminSidebar: () => void
+  setAdminSidebarOpen: (isOpen: boolean) => void
+}
+
+export const useUIStore = create<UIState>((set) => ({
+  isAdminSidebarOpen: false,
+  toggleAdminSidebar: () => set((state) => ({ isAdminSidebarOpen: !state.isAdminSidebarOpen })),
+  setAdminSidebarOpen: (isOpen) => set({ isAdminSidebarOpen: isOpen }),
+}))
+

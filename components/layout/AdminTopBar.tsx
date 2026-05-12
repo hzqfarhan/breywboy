@@ -2,9 +2,11 @@
 
 import { usePathname } from "next/navigation"
 import { Bell, Search, Menu } from "lucide-react"
+import { useUIStore } from "@/lib/store"
 
 export function AdminTopBar() {
   const pathname = usePathname()
+  const { toggleAdminSidebar } = useUIStore()
 
   const getTitle = () => {
     if (pathname === "/admin") return "Dashboard"
@@ -21,7 +23,7 @@ export function AdminTopBar() {
   return (
     <header className="h-16 bg-white border-b flex items-center justify-between px-6 shrink-0 z-10 relative">
       <div className="flex items-center gap-4">
-        <button className="md:hidden text-muted-foreground">
+        <button onClick={toggleAdminSidebar} className="md:hidden text-muted-foreground p-1 hover:bg-secondary rounded-md">
           <Menu className="w-6 h-6" />
         </button>
         <img src="/assets/brey-this.png" alt="Breywboy" className="h-9 w-auto" />

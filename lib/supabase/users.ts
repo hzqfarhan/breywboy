@@ -75,3 +75,20 @@ export async function upsertUser(user: {
   }
   return { status: 'created' as const, user: data }
 }
+
+/** Update user details */
+export async function updateUser(id: string, updates: any) {
+  if (!id) return false
+  const { data, error } = await supabase
+    .from('User')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('[users] updateUser:', error.message)
+    return { success: false, error: error.message }
+  }
+  return { success: true, data }
+}

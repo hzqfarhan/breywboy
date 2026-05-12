@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS "User" (
   "role" TEXT DEFAULT 'CUSTOMER',
   "points" INTEGER DEFAULT 0,
   "phone" TEXT,
+  "favouriteDrink" TEXT,
   "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

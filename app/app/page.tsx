@@ -81,8 +81,12 @@ export default async function CustomerDashboard() {
           <div className="flex overflow-x-auto pb-4 -mx-4 px-4 gap-4 snap-x">
             {(popularItems || []).map((item: any) => (
               <Link key={item.id} href="/app/menu" className="min-w-[160px] snap-start bg-white rounded-2xl shadow-sm border p-3 flex flex-col">
-                <div className="w-full aspect-square bg-secondary rounded-xl mb-3 flex items-center justify-center">
-                  <Coffee className="w-12 h-12 text-primary/20" />
+                <div className="w-full aspect-square bg-secondary rounded-xl mb-3 flex items-center justify-center overflow-hidden">
+                  {item.imageUrl ? (
+                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <Coffee className="w-12 h-12 text-primary/20" />
+                  )}
                 </div>
                 <h3 className="font-bold text-sm leading-tight mb-1 line-clamp-2 flex-1">{item.name}</h3>
                 <div className="flex items-center justify-between mt-2">
