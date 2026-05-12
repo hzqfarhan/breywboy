@@ -2,12 +2,13 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, ShoppingBag, Coffee, ListTree, Tags, Gift, Users, Settings, X, Eye } from "lucide-react"
+import { LayoutDashboard, ShoppingBag, Coffee, ListTree, Tags, Gift, Users, Settings, X, Eye, MonitorCog } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useUIStore } from "@/lib/store"
 
 const routes = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/pos", label: "POS", icon: MonitorCog },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { href: "/admin/menu", label: "Menu", icon: Coffee },
   { href: "/admin/storefront", label: "Storefront View", icon: Eye },

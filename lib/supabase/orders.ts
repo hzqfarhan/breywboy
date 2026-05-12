@@ -174,3 +174,86 @@ export async function createOrder(
 
   return order
 }
+
+/** Create a walk-in order from the admin POS */
+export async function createWalkInOrder(
+  cartItems: CartItem[],
+  paymentMethod: string,
+  customerName?: string,
+  notes?: string
+) {
+  let subtotal = 0
+  const orderItemsData = []
+
+  for (const item of cartItems) {
+    const product = await getProductById(item.productId)
+    if (!product) throw new Error(`Product not found: ${item.productId}`)
+
+    let unitPrice = product.basePrice || 0
+
+    if (product.hasTemperatureOption && item.customizations?.temperature) {
+      const temp = item.customizations.temperature
+      if (temp === 'Hot' && product.allowHot && product.hotPrice != null) {
+        unitPrice = product.hotPrice
+      } else if (temp === 'Iced' && product.allowIced && product.icedPrice != null) {
+        unitPrice = product.icedPrice
+      } else {
+        throw new Error(`Invalid temperature option for ${product.name}`)
+      }
+    }
+
+    if (item.customizations?.addOns?.length > 0) {
+      for (const addon of item.customizations.addOns) {
+        const { data: addonDb } = await supabase
+          .from('AddOn')
+          .select('*')
+          .eq('id', addon.id)
+          .single()
+        if (!addonDb) throw new Error(`Add-on not found: ${addon.id}`)
+        unitPrice += addonDb.price
+      }
+    }
+
+    const itemTotal = unitPrice * item.quantity
+    subtotal += itemTotal
+
+    orderItemsData.push({
+      productId: product.id,
+      productNameSnapshot: product.name,
+      unitPrice,
+      quantity: item.quantity,
+      total: itemTotal,
+      customizations: JSON.stringify(item.customizations),
+    })
+  }
+
+  const orderNumber = `POS-${Math.floor(1000 + Math.random() * 9000)}`
+  const pickupDate = new Date(Date.now() + 10 * 60000).toISOString()
+  const cleanNotes = [customerName && `Walk-in: ${customerName}`, notes].filter(Boolean).join(' | ')
+
+  const { data: order, error: orderError } = await supabase
+    .from('Order')
+    .insert({
+      userId: null,
+      orderNumber,
+      subtotal,
+      total: subtotal,
+      paymentMethod,
+      paymentStatus: 'PAID',
+      pickupTime: pickupDate,
+      status: 'NEW',
+      notes: cleanNotes || null,
+    })
+    .select()
+    .single()
+
+  if (orderError) throw new Error(orderError.message)
+
+  const { error: itemsError } = await supabase
+    .from('OrderItem')
+    .insert(orderItemsData.map((item) => ({ ...item, orderId: order.id })))
+
+  if (itemsError) throw new Error(itemsError.message)
+
+  return order
+}
