@@ -13,8 +13,8 @@ export default function AboutPage() {
       </header>
       
       <main className="flex-1 overflow-y-auto">
-        <section className="px-4 py-8 flex flex-col items-center gap-6 text-center">
-          <div className="w-32 h-32 bg-secondary rounded-[2rem] rotate-3 shadow-lg overflow-hidden flex items-center justify-center p-6">
+        <section className="px-4 py-12 flex flex-col items-center gap-8 text-center">
+          <div className="w-48 h-48 bg-secondary rounded-[2.5rem] rotate-3 shadow-xl overflow-hidden flex items-center justify-center p-8">
              <img src="/assets/brey-this.png" alt="Breywboy" className="w-full h-auto" />
           </div>
           

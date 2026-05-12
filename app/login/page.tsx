@@ -12,7 +12,7 @@ export default function LoginPage() {
     <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
       <div className="absolute top-8 left-8">
         <Link href="/" className="flex items-center">
-          <img src="/assets/brey-this.png" alt="Breywboy" className="h-8 w-auto" />
+          <img src="/assets/brey-this.png" alt="Breywboy" className="h-10 w-auto" />
         </Link>
       </div>
       
