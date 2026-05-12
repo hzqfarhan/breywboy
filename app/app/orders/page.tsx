@@ -4,6 +4,8 @@ import { getUserOrders } from "@/lib/supabase/orders"
 import { CustomerTopBar } from "@/components/layout/CustomerTopBar"
 import Link from "next/link"
 import { Coffee, ChevronRight, ReceiptText } from "lucide-react"
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 type OrderItem = {
   quantity: number
@@ -66,39 +68,47 @@ function OrderCard({ order }: { order: Order }) {
   const isCancelled = order.status === "CANCELLED"
   
   return (
-    <Link href={`/app/orders/${order.id}`}>
-      <div className="bg-white p-4 rounded-2xl shadow-sm border flex items-center justify-between hover:shadow-md transition-all">
-        <div className="flex gap-4 items-center">
-          <div className={`p-3 rounded-full ${isCompleted ? 'bg-secondary' : isCancelled ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'}`}>
-            <Coffee className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-bold text-sm">Order #{order.orderNumber}</span>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                isCompleted ? 'bg-success/20 text-success-foreground' : 
-                isCancelled ? 'bg-destructive/20 text-destructive' : 
-                'bg-accent/20 text-accent'
-              }`}>
-                {order.status}
-              </span>
+    <div className="bg-white p-4 rounded-2xl shadow-sm border transition-all hover:shadow-md">
+      <div className="flex items-center justify-between gap-3">
+        <Link href={`/app/orders/${order.id}`} className="min-w-0 flex-1">
+          <div className="flex gap-4 items-center">
+            <div className={`p-3 rounded-full ${isCompleted ? 'bg-secondary' : isCancelled ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'}`}>
+              <Coffee className="w-6 h-6" />
             </div>
-            <p className="text-xs text-muted-foreground">
-              {itemCount} items • RM{order.total.toFixed(2)}
-            </p>
-            <p className="text-[10px] font-medium text-muted-foreground">
-              {order.paymentMethod === "Counter" ? "Pay at counter" : "Online"} - {order.paymentStatus === "PAID" ? "Paid" : "Payment pending"}
-            </p>
-            <p className="text-[10px] text-muted-foreground/60 mt-1">
-              {new Date(order.createdAt).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-            </p>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <span className="font-bold text-sm">Order #{order.orderNumber}</span>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  isCompleted ? 'bg-success/20 text-success-foreground' :
+                  isCancelled ? 'bg-destructive/20 text-destructive' :
+                  'bg-accent/20 text-accent'
+                }`}>
+                  {order.status}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {itemCount} items • RM{order.total.toFixed(2)}
+              </p>
+              <p className="text-[10px] font-medium text-muted-foreground">
+                {order.paymentMethod === "Counter" ? "Pay at counter" : "Online"} - {order.paymentStatus === "PAID" ? "Paid" : "Payment pending"}
+              </p>
+              <p className="text-[10px] text-muted-foreground/60 mt-1">
+                {new Date(order.createdAt).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+              </p>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <ReceiptText className="h-4 w-4" />
-          <ChevronRight className="w-5 h-5" />
+        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/app/orders/${order.id}/receipt`}
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "shrink-0 rounded-full")}
+          >
+            <ReceiptText className="h-4 w-4" />
+            Receipt
+          </Link>
+          <ChevronRight className="w-5 h-5 text-muted-foreground" />
         </div>
       </div>
-    </Link>
+    </div>
   )
 }

@@ -13,7 +13,7 @@ type OrderItem = {
   productNameSnapshot: string
   quantity: number
   total: number
-  customizations: string
+  customizations: string | null
 }
 
 export default async function OrderDetailPage({ params }: { params: { id: string } }) {
@@ -54,15 +54,13 @@ export default async function OrderDetailPage({ params }: { params: { id: string
           <h3 className="font-bold text-sm">Order Summary</h3>
           <div className="space-y-3">
             {order.items.map((item: OrderItem) => {
-              const customs = JSON.parse(item.customizations)
+              const customs = parseCustomizations(item.customizations)
               return (
                 <div key={item.id} className="flex gap-3 text-sm">
                   <span className="font-mono font-bold text-primary">{item.quantity}x</span>
                   <div className="flex-1">
                     <p className="font-bold">{item.productNameSnapshot}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {customs.size}, {customs.temperature}
-                    </p>
+                    {customs && <p className="text-xs text-muted-foreground">{customs}</p>}
                   </div>
                   <span className="font-mono">RM{item.total.toFixed(2)}</span>
                 </div>
@@ -106,6 +104,13 @@ export default async function OrderDetailPage({ params }: { params: { id: string
               Your receipt is ready for this order. Please pay at the counter so staff can mark it as paid.
             </p>
           )}
+
+          <Link href={`/app/orders/${order.id}/receipt`}>
+            <Button variant="outline" className="w-full rounded-full">
+              <ReceiptText className="h-4 w-4" />
+              View Full Receipt
+            </Button>
+          </Link>
         </div>
 
         {isCompleted && (
@@ -120,6 +125,26 @@ export default async function OrderDetailPage({ params }: { params: { id: string
       </div>
     </div>
   )
+}
+
+function parseCustomizations(customizations: string | null) {
+  if (!customizations) return ""
+
+  try {
+    const parsed = JSON.parse(customizations)
+    const parts = [
+      parsed.size,
+      parsed.temperature,
+      Array.isArray(parsed.addOns) && parsed.addOns.length > 0
+        ? parsed.addOns.map((addOn: { name?: string }) => addOn.name).filter(Boolean).join(", ")
+        : "",
+      parsed.instructions ? `Note: ${parsed.instructions}` : "",
+    ].filter(Boolean)
+
+    return parts.join(" • ")
+  } catch {
+    return ""
+  }
 }
 
 function ReceiptRow({ label, value }: { label: string, value: string }) {

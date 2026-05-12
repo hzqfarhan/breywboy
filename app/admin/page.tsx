@@ -1,9 +1,18 @@
 export const dynamic = "force-dynamic";
 import { getAllOrders } from "@/lib/supabase/orders"
 import { DollarSign, ShoppingBag, Coffee, CheckCircle2 } from "lucide-react"
+import { RevenueLineChart } from "./RevenueLineChart"
+
+type RevenuePoint = {
+  label: string
+  dateKey: string
+  revenue: number
+  orders: number
+}
 
 export default async function AdminDashboard() {
   const orders = await getAllOrders()
+  const chartData = getLastSevenDaysRevenue(orders)
   
   const totalRevenue = orders.reduce((acc, order) => acc + order.total, 0)
   const pendingCount = orders.filter(o => o.status === "NEW" || o.status === "PREPARING").length
@@ -23,10 +32,17 @@ export default async function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Charts placeholder */}
         <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border min-h-[400px] flex flex-col">
-          <h3 className="font-heading font-bold text-lg mb-6">Revenue Overview</h3>
-          <div className="flex-1 flex items-center justify-center bg-secondary/30 rounded-xl border border-dashed">
-             <p className="text-muted-foreground text-sm">Recharts Line Chart Placeholder</p>
+          <div className="mb-6 flex items-start justify-between gap-4">
+            <div>
+              <h3 className="font-heading font-bold text-lg">Revenue Overview</h3>
+              <p className="text-sm text-muted-foreground">Daily sales and order volume for the last 7 days</p>
+            </div>
+            <div className="rounded-xl bg-secondary px-3 py-2 text-right">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">7-day sales</p>
+              <p className="font-mono text-sm font-bold text-primary">RM{chartData.reduce((sum, point) => sum + point.revenue, 0).toFixed(2)}</p>
+            </div>
           </div>
+          <RevenueLineChart data={chartData} />
         </div>
         
         {/* Recent Orders */}
@@ -48,6 +64,41 @@ export default async function AdminDashboard() {
 
     </div>
   )
+}
+
+function getLastSevenDaysRevenue(orders: Array<{ createdAt: string, total: number }>): RevenuePoint[] {
+  const formatter = new Intl.DateTimeFormat("en-MY", { day: "numeric", month: "short" })
+  const days = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date()
+    date.setHours(0, 0, 0, 0)
+    date.setDate(date.getDate() - (6 - index))
+
+    return {
+      label: formatter.format(date),
+      dateKey: date.toISOString().slice(0, 10),
+      revenue: 0,
+      orders: 0,
+    }
+  })
+
+  const dayMap = new Map(days.map((day) => [day.dateKey, day]))
+
+  orders.forEach((order) => {
+    const orderDate = new Date(order.createdAt)
+    orderDate.setHours(0, 0, 0, 0)
+    const dateKey = orderDate.toISOString().slice(0, 10)
+    const point = dayMap.get(dateKey)
+
+    if (point) {
+      point.revenue += order.total || 0
+      point.orders += 1
+    }
+  })
+
+  return days.map((day) => ({
+    ...day,
+    revenue: Number(day.revenue.toFixed(2)),
+  }))
 }
 
 function StatCard({ title, value, icon, trend, trendUp = true }: { title: string, value: string | number, icon: React.ReactNode, trend: string, trendUp?: boolean }) {
