@@ -14,10 +14,10 @@ export async function authenticate(
 
     if (role === "ADMIN") {
       email = "admin@breywboy.demo"
-      password = "admin123"
+      password = ""
     } else if (role === "CUSTOMER") {
       email = "customer@breywboy.demo"
-      password = "customer123"
+      password = ""
     } else {
       // Manual form submission
       email = formData.get("email") as string

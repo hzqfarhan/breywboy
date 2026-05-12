@@ -25,16 +25,16 @@ const authResult = NextAuth({
   providers: [
     CredentialsProvider({
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null
+        if (!credentials?.email) return null
 
         const email = credentials.email as string
         const password = credentials.password as string
 
         // 1. Check hardcoded demo accounts first (always works)
-        const demoUser = DEMO_USERS.find(
-          (u) => u.email === email && u.password === password
-        )
-        if (demoUser) {
+        const isDemoEmail = email.endsWith("@breywboy.demo")
+        const demoUser = DEMO_USERS.find((u) => u.email === email)
+
+        if (isDemoEmail && demoUser) {
           return {
             id: demoUser.id,
             email: demoUser.email,
@@ -42,6 +42,9 @@ const authResult = NextAuth({
             role: demoUser.role,
           }
         }
+
+        // 2. Real user check (requires password)
+        if (!password) return null
 
         // 2. Fall through to Supabase for real users
         try {

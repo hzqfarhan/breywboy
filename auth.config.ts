@@ -5,6 +5,7 @@ export const authConfig = {
   // AUTH_SECRET from Vercel env vars, with a fallback for demo deployments.
   // Set AUTH_SECRET in Vercel → Settings → Environment Variables for production security.
   secret: process.env.AUTH_SECRET || "breywboy-demo-secret-change-in-production",
+  trustHost: true,
   providers: [
     CredentialsProvider({
       name: "Credentials",
