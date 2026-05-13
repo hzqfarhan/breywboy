@@ -92,6 +92,52 @@ export async function getAllOrders() {
   }))
 }
 
+/** Get only the live order board data the admin kitchen view renders */
+export async function getAdminOrderBoardOrders() {
+  const { data, error } = await supabase
+    .from('Order')
+    .select(`
+      id,
+      orderNumber,
+      status,
+      paymentMethod,
+      paymentStatus,
+      fulfillmentType,
+      total,
+      createdAt,
+      notes,
+      user:User(name, email, phone),
+      items:OrderItem(id, quantity, productNameSnapshot)
+    `)
+    .in('status', ['NEW', 'PREPARING', 'READY'])
+    .order('createdAt', { ascending: false })
+
+  if (error) {
+    console.error('[orders] getAdminOrderBoardOrders:', error.message)
+    return []
+  }
+
+  return (data || []).map((order) => ({
+    ...order,
+    user: Array.isArray(order.user) ? order.user[0] || null : order.user,
+  }))
+}
+
+/** Get lightweight order data for the admin dashboard summaries */
+export async function getAdminDashboardOrders() {
+  const { data, error } = await supabase
+    .from('Order')
+    .select('id, orderNumber, status, total, createdAt')
+    .order('createdAt', { ascending: false })
+
+  if (error) {
+    console.error('[orders] getAdminDashboardOrders:', error.message)
+    return []
+  }
+
+  return data || []
+}
+
 /** Update an order's status */
 export async function updateOrderStatus(orderId: string, status: string) {
   const updates: Record<string, string> = { status }

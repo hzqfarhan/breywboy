@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { markOrderPaid, updateOrderStatus } from "./actions"
 import { Button } from "@/components/ui/button"
 import { Clock, CheckCircle2, ArrowRight, Banknote, ReceiptText } from "lucide-react"
@@ -29,15 +29,29 @@ type Order = {
   items: OrderItem[]
 }
 
+const POLL_INTERVAL_MS = 5000
+
+const columns = [
+  { id: "NEW", title: "New Orders", color: "bg-blue-50 border-blue-200", titleColor: "text-blue-700" },
+  { id: "PREPARING", title: "Preparing", color: "bg-orange-50 border-orange-200", titleColor: "text-orange-700" },
+  { id: "READY", title: "Ready for Pickup", color: "bg-green-50 border-green-200", titleColor: "text-green-700" },
+] as const
+
 export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
   const [orders, setOrders] = useState(initialOrders)
+  const ordersSignatureRef = useRef(getOrdersSignature(initialOrders))
 
   useEffect(() => {
-    setOrders(initialOrders)
+    const nextSignature = getOrdersSignature(initialOrders)
+    if (ordersSignatureRef.current !== nextSignature) {
+      ordersSignatureRef.current = nextSignature
+      setOrders(initialOrders)
+    }
   }, [initialOrders])
 
   useEffect(() => {
     let isPolling = false
+    const controller = new AbortController()
 
     const refreshOrders = async () => {
       if (isPolling || document.visibilityState === "hidden") return
@@ -46,48 +60,77 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
       try {
         const response = await fetch("/api/admin/orders", {
           cache: "no-store",
+          signal: controller.signal,
           headers: { Accept: "application/json" },
         })
 
         if (response.ok) {
           const data = await response.json() as { orders?: Order[] }
-          setOrders(data.orders || [])
+          const nextOrders = data.orders || []
+          const nextSignature = getOrdersSignature(nextOrders)
+
+          if (ordersSignatureRef.current !== nextSignature) {
+            ordersSignatureRef.current = nextSignature
+            setOrders(nextOrders)
+          }
+        }
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          console.error("[orders] refresh failed:", error)
         }
       } finally {
         isPolling = false
       }
     }
 
-    const interval = window.setInterval(refreshOrders, 2000)
+    const interval = window.setInterval(refreshOrders, POLL_INTERVAL_MS)
 
-    return () => window.clearInterval(interval)
+    return () => {
+      controller.abort()
+      window.clearInterval(interval)
+    }
   }, [])
 
-  const columns = [
-    { id: "NEW", title: "New Orders", color: "bg-blue-50 border-blue-200", titleColor: "text-blue-700" },
-    { id: "PREPARING", title: "Preparing", color: "bg-orange-50 border-orange-200", titleColor: "text-orange-700" },
-    { id: "READY", title: "Ready for Pickup", color: "bg-green-50 border-green-200", titleColor: "text-green-700" },
-  ]
+  const ordersByStatus = useMemo(() => {
+    return columns.reduce<Record<(typeof columns)[number]["id"], Order[]>>((groups, column) => {
+      groups[column.id] = []
+      return groups
+    }, { NEW: [], PREPARING: [], READY: [] })
+  }, [])
 
-  const handleStatusChange = async (orderId: string, newStatus: string) => {
+  const groupedOrders = useMemo(() => {
+    const groups = { ...ordersByStatus, NEW: [...ordersByStatus.NEW], PREPARING: [...ordersByStatus.PREPARING], READY: [...ordersByStatus.READY] }
+
+    for (const order of orders) {
+      if (order.status === "NEW" || order.status === "PREPARING" || order.status === "READY") {
+        groups[order.status].push(order)
+      }
+    }
+
+    return groups
+  }, [orders, ordersByStatus])
+
+  const handleStatusChange = useCallback(async (orderId: string, newStatus: string) => {
     setOrders(prev => prev.map((o) => o.id === orderId ? {
       ...o,
       status: newStatus,
       paymentStatus: newStatus === "COMPLETED" ? "PAID" : o.paymentStatus,
     } : o))
+    ordersSignatureRef.current = ""
     await updateOrderStatus(orderId, newStatus)
-  }
+  }, [])
 
-  const handleMarkPaid = async (orderId: string) => {
+  const handleMarkPaid = useCallback(async (orderId: string) => {
     setOrders(prev => prev.map((o) => o.id === orderId ? { ...o, paymentStatus: "PAID" } : o))
+    ordersSignatureRef.current = ""
     await markOrderPaid(orderId)
-  }
+  }, [])
 
   return (
     <div className="flex-1 overflow-x-auto pb-4">
       <div className="flex gap-6 min-w-max h-full">
         {columns.map(col => {
-          const colOrders = orders.filter(o => o.status === col.id)
+          const colOrders = groupedOrders[col.id]
           return (
             <div key={col.id} className={`w-80 flex flex-col rounded-2xl border ${col.color}`}>
               <div className="p-4 border-b border-inherit">
@@ -119,7 +162,7 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
   )
 }
 
-function OrderCard({
+const OrderCard = memo(function OrderCard({
   order,
   onStatusChange,
   onMarkPaid,
@@ -128,9 +171,12 @@ function OrderCard({
   onStatusChange: (id: string, status: string) => void,
   onMarkPaid: (id: string) => void,
 }) {
-  const itemCount = order.items.reduce((acc, item) => acc + item.quantity, 0)
+  const itemCount = useMemo(() => order.items.reduce((acc, item) => acc + item.quantity, 0), [order.items])
   const isCounterPending = order.paymentMethod === "Counter" && order.paymentStatus !== "PAID"
   const fulfillmentLabel = getFulfillmentLabel(order.fulfillmentType)
+  const createdTime = useMemo(() => {
+    return new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }, [order.createdAt])
   
   return (
     <div className="bg-white p-4 rounded-xl shadow-sm border border-border/50">
@@ -142,7 +188,7 @@ function OrderCard({
         </div>
         <div className="flex items-center text-xs text-muted-foreground font-medium">
           <Clock className="w-3 h-3 mr-1" />
-          {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {createdTime}
         </div>
       </div>
 
@@ -217,10 +263,23 @@ function OrderCard({
       </div>
     </div>
   )
-}
+})
 
 function getFulfillmentLabel(value?: string | null) {
   if (value === "DINE_IN") return "Dine-in"
   if (value === "WALK_IN") return "Walk-in"
   return "Takeaway"
+}
+
+function getOrdersSignature(orders: Order[]) {
+  return orders
+    .map((order) => [
+      order.id,
+      order.status,
+      order.paymentStatus,
+      order.total,
+      order.items.length,
+      order.items.map((item) => `${item.id}:${item.quantity}`).join(","),
+    ].join(":"))
+    .join("|")
 }

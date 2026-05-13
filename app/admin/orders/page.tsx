@@ -1,9 +1,9 @@
 export const dynamic = "force-dynamic";
-import { getAllOrders } from "@/lib/supabase/orders"
+import { getAdminOrderBoardOrders } from "@/lib/supabase/orders"
 import { OrdersClient } from "./OrdersClient"
 
 export default async function AdminOrdersPage() {
-  const orders = await getAllOrders()
+  const orders = await getAdminOrderBoardOrders()
 
   return (
     <div className="h-full flex flex-col">

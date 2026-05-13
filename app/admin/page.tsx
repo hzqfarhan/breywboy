@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { getAllOrders } from "@/lib/supabase/orders"
+import { getAdminDashboardOrders } from "@/lib/supabase/orders"
 import { DollarSign, ShoppingBag, Coffee, CheckCircle2 } from "lucide-react"
 import { RevenueLineChart } from "./RevenueLineChart"
 import { MetricCard } from "@/components/admin/MetricCard"
@@ -15,7 +15,7 @@ type RevenuePoint = {
 }
 
 export default async function AdminDashboard() {
-  const orders = await getAllOrders()
+  const orders = await getAdminDashboardOrders()
   const [profit, inventory] = await Promise.all([getProfitDashboard(), getInventoryOverview()])
   const chartData = getLastSevenDaysRevenue(orders)
   

@@ -1,9 +1,7 @@
 import { auth } from "@/lib/auth"
-import { getAllOrders } from "@/lib/supabase/orders"
+import { getAdminOrderBoardOrders } from "@/lib/supabase/orders"
 
 export const dynamic = "force-dynamic"
-
-const BOARD_STATUSES = new Set(["NEW", "PREPARING", "READY"])
 
 export async function GET() {
   const session = await auth()
@@ -13,8 +11,7 @@ export async function GET() {
     return Response.json({ message: "Forbidden" }, { status: 403 })
   }
 
-  const orders = await getAllOrders()
-  const boardOrders = orders.filter((order) => BOARD_STATUSES.has(order.status))
+  const orders = await getAdminOrderBoardOrders()
 
-  return Response.json({ orders: boardOrders })
+  return Response.json({ orders })
 }
