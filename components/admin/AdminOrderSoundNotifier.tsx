@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 
 type OrderSnapshot = {
   id: string
@@ -11,6 +11,7 @@ const POLL_INTERVAL_MS = 5000
 const RING_SRC = "/assets/ring.mp3"
 
 export function AdminOrderSoundNotifier() {
+  const [isAudioReady, setAudioReady] = useState(false)
   const knownOrderIdsRef = useRef<Set<string> | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
@@ -21,21 +22,24 @@ export function AdminOrderSoundNotifier() {
 
     const unlockAudio = async () => {
       const previousVolume = audio.volume
-      audio.volume = 0
+      audio.volume = 0.01
 
       try {
         await audio.play()
         audio.pause()
         audio.currentTime = 0
+        setAudioReady(true)
+        window.removeEventListener("pointerdown", unlockAudio)
+        window.removeEventListener("keydown", unlockAudio)
       } catch {
-        // Browsers may still block audio until a later interaction.
+        setAudioReady(false)
       } finally {
         audio.volume = previousVolume
       }
     }
 
-    window.addEventListener("pointerdown", unlockAudio, { once: true })
-    window.addEventListener("keydown", unlockAudio, { once: true })
+    window.addEventListener("pointerdown", unlockAudio)
+    window.addEventListener("keydown", unlockAudio)
 
     return () => {
       window.removeEventListener("pointerdown", unlockAudio)
@@ -110,5 +114,32 @@ export function AdminOrderSoundNotifier() {
     }
   }, [])
 
-  return null
+  if (isAudioReady) return null
+
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        const audio = audioRef.current
+        if (!audio) return
+
+        const previousVolume = audio.volume
+        audio.volume = 0.01
+
+        try {
+          await audio.play()
+          audio.pause()
+          audio.currentTime = 0
+          setAudioReady(true)
+        } catch {
+          setAudioReady(false)
+        } finally {
+          audio.volume = previousVolume
+        }
+      }}
+      className="fixed bottom-4 right-4 z-[60] rounded-full border bg-white px-4 py-2 text-xs font-bold text-primary shadow-sm hover:bg-secondary"
+    >
+      Enable sound
+    </button>
+  )
 }
