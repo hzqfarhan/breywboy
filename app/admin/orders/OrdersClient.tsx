@@ -45,6 +45,8 @@ const columns = [
   { id: "READY", title: "Ready for Pickup", color: "bg-green-50 border-green-200", titleColor: "text-green-700" },
 ] as const
 
+let preferredFemaleVoice: SpeechSynthesisVoice | null = null
+
 export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
   const [orders, setOrders] = useState(initialOrders)
   const [receiptOrder, setReceiptOrder] = useState<Order | null>(null)
@@ -57,6 +59,19 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
       setOrders(initialOrders)
     }
   }, [initialOrders])
+
+  useEffect(() => {
+    if (!("speechSynthesis" in window)) return
+
+    const loadVoices = () => {
+      preferredFemaleVoice = getPreferredFemaleVoice()
+    }
+
+    loadVoices()
+    window.speechSynthesis.addEventListener("voiceschanged", loadVoices)
+
+    return () => window.speechSynthesis.removeEventListener("voiceschanged", loadVoices)
+  }, [])
 
   useEffect(() => {
     let isPolling = false
@@ -438,9 +453,9 @@ function announceReadyOrder(orderNumber: string) {
 
   const utterance = new SpeechSynthesisUtterance(spokenOrderNumber)
   utterance.lang = "en-US"
-  utterance.voice = getPreferredFemaleVoice()
+  utterance.voice = preferredFemaleVoice || getPreferredFemaleVoice()
   utterance.rate = 0.45
-  utterance.pitch = 1.15
+  utterance.pitch = 1.25
   utterance.volume = 1
 
   window.speechSynthesis.resume()
@@ -449,7 +464,22 @@ function announceReadyOrder(orderNumber: string) {
 
 function getPreferredFemaleVoice() {
   const voices = window.speechSynthesis.getVoices()
-  const preferredNames = ["female", "zira", "samantha", "susan", "victoria", "karen", "moira", "tessa"]
+  const preferredNames = [
+    "female",
+    "zira",
+    "jenny",
+    "aria",
+    "samantha",
+    "susan",
+    "victoria",
+    "karen",
+    "moira",
+    "tessa",
+    "serena",
+    "allison",
+    "ava",
+    "nicky",
+  ]
 
   return (
     voices.find((voice) => voice.lang.startsWith("en") && preferredNames.some((name) => voice.name.toLowerCase().includes(name))) ||
