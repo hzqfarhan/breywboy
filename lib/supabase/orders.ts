@@ -104,10 +104,14 @@ export async function getAdminOrderBoardOrders() {
       paymentStatus,
       fulfillmentType,
       total,
+      subtotal,
+      discount,
+      promoCode,
+      pickupTime,
       createdAt,
       notes,
       user:User(name, email, phone),
-      items:OrderItem(id, quantity, productNameSnapshot)
+      items:OrderItem(id, quantity, productNameSnapshot, unitPrice, total, customizations)
     `)
     .in('status', ['NEW', 'PREPARING', 'READY'])
     .order('createdAt', { ascending: false })

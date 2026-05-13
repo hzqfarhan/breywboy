@@ -4,11 +4,15 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { markOrderPaid, updateOrderStatus } from "./actions"
 import { Button } from "@/components/ui/button"
 import { Clock, CheckCircle2, ArrowRight, Banknote, ReceiptText } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 type OrderItem = {
   id: string
   quantity: number
   productNameSnapshot: string
+  unitPrice?: number | null
+  total?: number | null
+  customizations?: string | null
 }
 
 type Order = {
@@ -19,6 +23,10 @@ type Order = {
   paymentStatus: string
   fulfillmentType?: string | null
   total: number
+  subtotal?: number | null
+  discount?: number | null
+  promoCode?: string | null
+  pickupTime?: string | null
   createdAt: string
   notes?: string | null
   user?: {
@@ -39,6 +47,7 @@ const columns = [
 
 export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
   const [orders, setOrders] = useState(initialOrders)
+  const [receiptOrder, setReceiptOrder] = useState<Order | null>(null)
   const ordersSignatureRef = useRef(getOrdersSignature(initialOrders))
 
   useEffect(() => {
@@ -144,6 +153,7 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
                   <OrderCard 
                     key={order.id} 
                     order={order} 
+                    onViewReceipt={setReceiptOrder}
                     onStatusChange={handleStatusChange} 
                     onMarkPaid={handleMarkPaid}
                   />
@@ -158,16 +168,31 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
           )
         })}
       </div>
+
+      <Dialog open={Boolean(receiptOrder)} onOpenChange={(open) => !open && setReceiptOrder(null)}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+          {receiptOrder && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Receipt #{receiptOrder.orderNumber}</DialogTitle>
+              </DialogHeader>
+              <ReceiptPreview order={receiptOrder} />
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
 
 const OrderCard = memo(function OrderCard({
   order,
+  onViewReceipt,
   onStatusChange,
   onMarkPaid,
 }: {
   order: Order,
+  onViewReceipt: (order: Order) => void,
   onStatusChange: (id: string, status: string) => void,
   onMarkPaid: (id: string) => void,
 }) {
@@ -221,15 +246,14 @@ const OrderCard = memo(function OrderCard({
       </div>
 
       <div className="flex gap-2 mb-2">
-        <a 
-          href={`/app/orders/${order.id}/receipt`} 
-          target="_blank" 
-          rel="noopener noreferrer"
+        <button
+          type="button"
+          onClick={() => onViewReceipt(order)}
           className="flex-1 text-center py-2 rounded-lg bg-secondary text-[10px] font-bold uppercase hover:bg-secondary/80 transition-colors flex items-center justify-center gap-1"
         >
           <ReceiptText className="w-3 h-3" />
           View Receipt
-        </a>
+        </button>
       </div>
 
       {isCounterPending && (
@@ -265,10 +289,130 @@ const OrderCard = memo(function OrderCard({
   )
 })
 
+function ReceiptPreview({ order }: { order: Order }) {
+  const subtotal = order.subtotal ?? order.total
+  const discount = order.discount ?? 0
+
+  return (
+    <div className="overflow-hidden rounded-xl border bg-white">
+      <div className="border-b border-dashed p-5 text-center">
+        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-primary">
+          <ReceiptText className="h-6 w-6" />
+        </div>
+        <h2 className="font-heading text-2xl font-bold text-primary">Breywboy</h2>
+        <p className="text-xs text-muted-foreground">Official Receipt</p>
+      </div>
+
+      <div className="space-y-4 p-5">
+        <div className="grid grid-cols-2 gap-3 text-xs">
+          <ReceiptField label="Order" value={`#${order.orderNumber}`} />
+          <ReceiptField label="Status" value={order.status} />
+          <ReceiptField label="Date" value={formatDateTime(order.createdAt)} />
+          <ReceiptField label={order.fulfillmentType === "DINE_IN" ? "Serve" : "Pickup"} value={order.pickupTime ? formatDateTime(order.pickupTime) : "-"} />
+          <ReceiptField label="Type" value={getFulfillmentLabel(order.fulfillmentType)} />
+          <ReceiptField label="Payment" value={getPaymentLabel(order.paymentMethod)} />
+          <ReceiptField label="Paid" value={order.paymentStatus === "PAID" ? "Yes" : "Pending"} />
+          <ReceiptField label="Customer" value={order.user?.name || "Customer"} />
+        </div>
+
+        <div className="border-y border-dashed py-4">
+          <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Items</h3>
+          <div className="space-y-3">
+            {order.items.map((item) => {
+              const details = parseCustomizations(item.customizations)
+              const lineTotal = item.total ?? (item.unitPrice ?? 0) * item.quantity
+
+              return (
+                <div key={item.id} className="text-sm">
+                  <div className="flex justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-bold">{item.quantity}x {item.productNameSnapshot}</p>
+                      {details && <p className="text-xs text-muted-foreground">{details}</p>}
+                      {item.unitPrice != null && (
+                        <p className="font-mono text-[11px] text-muted-foreground">RM{item.unitPrice.toFixed(2)} each</p>
+                      )}
+                    </div>
+                    <p className="font-mono font-bold">RM{lineTotal.toFixed(2)}</p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <TotalRow label="Subtotal" value={subtotal} />
+          {discount > 0 && (
+            <div className="flex justify-between text-sm text-success-foreground font-medium italic">
+              <span>Discount ({order.promoCode || "Promo"})</span>
+              <span className="font-mono">-RM{discount.toFixed(2)}</span>
+            </div>
+          )}
+          <TotalRow label="Total" value={order.total} strong />
+        </div>
+
+        {order.paymentStatus !== "PAID" && (
+          <p className="rounded-xl bg-warning/10 p-3 text-xs text-warning-foreground">
+            Payment is still pending. Customer should show this receipt at the counter.
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function getFulfillmentLabel(value?: string | null) {
   if (value === "DINE_IN") return "Dine-in"
   if (value === "WALK_IN") return "Walk-in"
   return "Takeaway"
+}
+
+function getPaymentLabel(value: string) {
+  if (value === "Counter") return "Pay at counter"
+  if (value === "Online") return "Online / Stripe pending"
+  return value
+}
+
+function ReceiptField({ label, value }: { label: string, value: string }) {
+  return (
+    <div className="rounded-xl bg-secondary p-3">
+      <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="mt-1 break-words font-medium text-foreground">{value}</p>
+    </div>
+  )
+}
+
+function TotalRow({ label, value, strong = false }: { label: string, value: number, strong?: boolean }) {
+  return (
+    <div className={`flex justify-between ${strong ? "text-lg font-bold text-primary" : "text-sm"}`}>
+      <span>{label}</span>
+      <span className="font-mono">RM{value.toFixed(2)}</span>
+    </div>
+  )
+}
+
+function formatDateTime(value: string) {
+  return new Date(value).toLocaleString("en-MY", { dateStyle: "medium", timeStyle: "short" })
+}
+
+function parseCustomizations(customizations?: string | null) {
+  if (!customizations) return ""
+
+  try {
+    const parsed = JSON.parse(customizations)
+    const parts = [
+      parsed.size,
+      parsed.temperature,
+      Array.isArray(parsed.addOns) && parsed.addOns.length > 0
+        ? parsed.addOns.map((addOn: { name?: string }) => addOn.name).filter(Boolean).join(", ")
+        : "",
+      parsed.instructions ? `Note: ${parsed.instructions}` : "",
+    ].filter(Boolean)
+
+    return parts.join(" / ")
+  } catch {
+    return ""
+  }
 }
 
 function getOrdersSignature(orders: Order[]) {
