@@ -287,9 +287,15 @@ const OrderCard = memo(function OrderCard({
           </Button>
         )}
         {order.status === "READY" && (
-          <Button size="sm" className="w-full bg-success text-success-foreground hover:bg-success/90" onClick={() => onStatusChange(order.id, "COMPLETED")}>
-            Complete Order <CheckCircle2 className="w-4 h-4 ml-1" />
-          </Button>
+          <div className="flex w-full flex-col gap-2">
+            <Button size="sm" variant="outline" className="w-full" onClick={() => announceReadyOrder(order.orderNumber)}>
+              <ReceiptText className="mr-1 h-4 w-4" />
+              Call Number
+            </Button>
+            <Button size="sm" className="w-full bg-success text-success-foreground hover:bg-success/90" onClick={() => onStatusChange(order.id, "COMPLETED")}>
+              Complete Order <CheckCircle2 className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
         )}
       </div>
     </div>
@@ -433,7 +439,7 @@ function announceReadyOrder(orderNumber: string) {
   const utterance = new SpeechSynthesisUtterance(spokenOrderNumber)
   utterance.lang = "en-US"
   utterance.voice = getPreferredFemaleVoice()
-  utterance.rate = 0.65
+  utterance.rate = 0.45
   utterance.pitch = 1.15
   utterance.volume = 1
 
