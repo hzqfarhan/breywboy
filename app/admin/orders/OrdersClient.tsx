@@ -275,7 +275,14 @@ const OrderCard = memo(function OrderCard({
           </>
         )}
         {order.status === "PREPARING" && (
-          <Button size="sm" className="w-full bg-warning text-warning-foreground hover:bg-warning/90" onClick={() => onStatusChange(order.id, "READY")}>
+          <Button
+            size="sm"
+            className="w-full bg-warning text-warning-foreground hover:bg-warning/90"
+            onClick={() => {
+              announceReadyOrder(order.orderNumber)
+              onStatusChange(order.id, "READY")
+            }}
+          >
             Ready for Pickup <ArrowRight className="w-4 h-4 ml-1" />
           </Button>
         )}
@@ -413,6 +420,24 @@ function parseCustomizations(customizations?: string | null) {
   } catch {
     return ""
   }
+}
+
+function announceReadyOrder(orderNumber: string) {
+  if (!("speechSynthesis" in window)) return
+
+  const spokenOrderNumber = orderNumber
+    .replace(/^BB-/i, "")
+    .split("")
+    .join(" ")
+
+  window.speechSynthesis.cancel()
+
+  const utterance = new SpeechSynthesisUtterance(spokenOrderNumber)
+  utterance.rate = 0.9
+  utterance.pitch = 1
+  utterance.volume = 1
+
+  window.speechSynthesis.speak(utterance)
 }
 
 function getOrdersSignature(orders: Order[]) {
