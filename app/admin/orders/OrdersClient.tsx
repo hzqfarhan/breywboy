@@ -432,12 +432,25 @@ function announceReadyOrder(orderNumber: string) {
 
   const utterance = new SpeechSynthesisUtterance(spokenOrderNumber)
   utterance.lang = "en-US"
-  utterance.rate = 0.9
-  utterance.pitch = 1
+  utterance.voice = getPreferredFemaleVoice()
+  utterance.rate = 0.65
+  utterance.pitch = 1.15
   utterance.volume = 1
 
   window.speechSynthesis.resume()
   window.speechSynthesis.speak(utterance)
+}
+
+function getPreferredFemaleVoice() {
+  const voices = window.speechSynthesis.getVoices()
+  const preferredNames = ["female", "zira", "samantha", "susan", "victoria", "karen", "moira", "tessa"]
+
+  return (
+    voices.find((voice) => voice.lang.startsWith("en") && preferredNames.some((name) => voice.name.toLowerCase().includes(name))) ||
+    voices.find((voice) => voice.lang === "en-US") ||
+    voices.find((voice) => voice.lang.startsWith("en")) ||
+    null
+  )
 }
 
 function getOrdersSignature(orders: Order[]) {
